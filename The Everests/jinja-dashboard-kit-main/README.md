@@ -170,6 +170,64 @@ Visit `http://localhost:8001` in your browser. The app should be up & running.
 
 <br />
 
+# DashboardKit Flask/Jinja + Django Backend
+
+This workspace contains both the Flask/Jinja dashboard frontend and a Django backend API for collaborative development.
+
+## Quick Start
+
+### 1. Flask Frontend
+
+```sh
+# Install dependencies
+pip3 install -r requirements.txt
+
+# Run Flask app
+export FLASK_APP=run.py
+export FLASK_ENV=development
+flask run --host=0.0.0.0 --port=5000
+```
+Access the UI at: http://127.0.0.1:5000/
+
+### 2. Django Backend
+
+```sh
+# Go to backend folder
+cd "Backend Django/Django Admin"
+
+# (Optional) Create and activate virtualenv
+python3 -m venv env
+source env/bin/activate
+
+# Install Django dependencies
+pip install -r requirements.txt
+
+# Run Django server
+python manage.py runserver 0.0.0.0:8000
+```
+API available at: http://127.0.0.1:8000/api/occupancy/?month_year=MM-YYYY
+
+## Collaborative Development
+- Both frontend and backend code are tracked in git.
+- Update and commit changes in either project as needed.
+- Use the API endpoint above to connect the dashboard to live backend data.
+
+## (Optional) Docker Compose
+You can use Docker Compose to run both Flask and Django together. Ask for a sample `docker-compose.yml` if needed.
+
+## Project Structure
+```
+< PROJECT ROOT >
+   |-- app/                # Flask frontend
+   |-- Backend Django/     # Django backend
+   |-- requirements.txt    # Flask requirements
+   |-- README.md           # This file
+   |-- ...
+```
+
+---
+For more help, see the documentation in each project folder or ask for setup scripts.
+
 ## Credits & Links
 
 - [Flask Framework](https://www.palletsprojects.com/p/flask/) - The official website

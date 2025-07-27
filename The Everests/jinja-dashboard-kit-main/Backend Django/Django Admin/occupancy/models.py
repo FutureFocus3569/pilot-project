@@ -6,6 +6,7 @@ class Centre(models.Model):
     moe_number = models.CharField(max_length=50, blank=True, null=True, help_text="MOE Number")
     u2_licensed = models.PositiveIntegerField(blank=True, null=True, help_text="Licensed U2 children")
     total_licensed = models.PositiveIntegerField(blank=True, null=True, help_text="Licensed Total children")
+    overdue_invoice_amount = models.CharField(max_length=32, blank=True, null=True)
 
     def __str__(self):
         return self.name

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-%_9bu0t0afl+88vj)pz(@%y_fe@t+30aesh-%$9w0+pg@ck^1q
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1', '192.168.44.138', '*']
 
 
 # Application definition
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'occupancy',
+    'overdue_invoices',
     'rest_framework',
     'corsheaders',
 ]
@@ -127,3 +128,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Heroku settings
+import django_heroku
+django_heroku.settings(locals())
