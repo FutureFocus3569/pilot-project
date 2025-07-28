@@ -38,7 +38,7 @@ class Command(BaseCommand):
 
             # TODO: Navigate to overdue invoices page and scrape data
             # driver.get('https://discoverchildcare.co.nz/overdue-invoices')
-            # time.sleep(2)
+            # ti            heroku login.sleep(2)
 
             # Example: Find invoice amounts (update selector as needed)
             # amounts = driver.find_elements(By.CLASS_NAME, 'invoice-amount')
