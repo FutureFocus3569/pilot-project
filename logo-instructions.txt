@@ -1,0 +1,4 @@
+To add your logo:
+1. Save your Future Focus logo as 'logo.png' or 'logo.svg' in: public/images/
+2. The logo will automatically appear in the sidebar
+3. Recommended size: 200x200 pixels or larger for crisp display

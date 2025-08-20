@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple User Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, select { width: 300px; padding: 8px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+        .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Simple User Management Test</h1>
+    
+    <h2>Create New User</h2>
+    <form id="userForm">
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="role">Role:</label>
+            <select id="role" name="role" required>
+                <option value="">Select Role</option>
+                <option value="USER">User</option>
+                <option value="ADMIN">Admin</option>
+                <option value="MASTER">Master</option>
+            </select>
+        </div>
+        
+        <button type="submit">Create User</button>
+    </form>
+    
+    <div id="result" class="result" style="display: none;"></div>
+    
+    <h2>List Users</h2>
+    <button onclick="loadUsers()">Load Users</button>
+    <div id="usersList"></div>
+
+    <script>
+        // Handle form submission
+        document.getElementById('userForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const userData = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                role: formData.get('role')
+            };
+            
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const response = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const result = await response.json();
+                
+                resultDiv.style.display = 'block';
+                if (response.ok) {
+                    resultDiv.innerHTML = `<h3>✅ Success!</h3><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    resultDiv.style.color = 'green';
+                    // Clear form
+                    e.target.reset();
+                } else {
+                    resultDiv.innerHTML = `<h3>❌ Error!</h3><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    resultDiv.style.color = 'red';
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<h3>❌ Network Error!</h3><p>${error.message}</p>`;
+                resultDiv.style.color = 'red';
+            }
+        });
+        
+        // Load users function
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users');
+                const result = await response.json();
+                
+                const usersList = document.getElementById('usersList');
+                if (response.ok) {
+                    usersList.innerHTML = `<h3>✅ Users loaded!</h3><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                } else {
+                    usersList.innerHTML = `<h3>❌ Error loading users!</h3><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                document.getElementById('usersList').innerHTML = `<h3>❌ Network Error!</h3><p>${error.message}</p>`;
+            }
+        }
+        
+        // Load users on page load
+        loadUsers();
+    </script>
+</body>
+</html>
