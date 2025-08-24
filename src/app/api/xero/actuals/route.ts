@@ -23,16 +23,18 @@ const parseMoney = (s?: string) =>
 const toIsoFromLabel = (label: string) => {
   // "31 Aug 25" -> "2025-08-31"
   const [d, mon, yy] = label.split(' ');
-  const m = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12}[mon as keyof any];
+  const monthMap = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+  const m = monthMap[mon as keyof typeof monthMap];
   const year = 2000 + parseInt(yy, 10);
   return `${year}-${String(m).padStart(2,'0')}-${String(parseInt(d,10)).padStart(2,'0')}`;
 };
 
-function flattenRows(rows: any[] = []): any[] {
-  const out: any[] = [];
+function flattenRows(rows: unknown[] = []): unknown[] {
+  const out: unknown[] = [];
   for (const r of rows) {
-    if (r.RowType === 'Section' && Array.isArray(r.Rows)) {
-      out.push(...flattenRows(r.Rows));
+    // Type guard for expected structure
+    if (typeof r === 'object' && r !== null && 'RowType' in r && (r as any).RowType === 'Section' && Array.isArray((r as any).Rows)) {
+      out.push(...flattenRows((r as any).Rows));
     } else {
       out.push(r);
     }
@@ -40,29 +42,67 @@ function flattenRows(rows: any[] = []): any[] {
   return out;
 }
 
-function extractMonthlyByAccountId(report: any, accountId: string) {
+function extractMonthlyByAccountId(report: unknown, accountId: string) {
   // 1) get month labels from header row
-  const header = report?.Rows?.find((r: any) => r.RowType === 'Header');
-  const monthLabels: string[] = (header?.Cells ?? []).slice(1).map((c: any) => c.Value); // skip first blank cell
+  let header: unknown = undefined;
+  if (typeof report === 'object' && report !== null && 'Rows' in report) {
+    const rows = (report as { Rows?: unknown[] }).Rows;
+    if (Array.isArray(rows)) {
+      header = rows.find((r) => typeof r === 'object' && r !== null && 'RowType' in r && (r as { RowType?: string }).RowType === 'Header');
+    }
+  }
+  const monthLabels: string[] = (header && typeof header === 'object' && 'Cells' in header && Array.isArray((header as { Cells?: unknown[] }).Cells))
+    ? ((header as { Cells: { Value: string }[] }).Cells).slice(1).map((c) => c.Value)
+    : [];
 
   // 2) find the account row anywhere in the report
-  const flat = flattenRows(report?.Rows);
-  const row = flat.find((r: any) =>
-    r.RowType === 'Row' &&
-    r.Cells?.[0]?.Attributes?.some((a: any) => a.Id === 'account' && a.Value === accountId)
-  );
+  let flat: unknown[] = [];
+  if (typeof report === 'object' && report !== null && 'Rows' in report) {
+    flat = flattenRows((report as { Rows?: unknown[] }).Rows);
+  }
+  const row = flat.find((r) => {
+    if (
+      typeof r === 'object' &&
+      r !== null &&
+      'RowType' in r &&
+      (r as { RowType?: string }).RowType === 'Row' &&
+      Array.isArray((r as { Cells?: unknown[] }).Cells)
+    ) {
+      const cells = (r as { Cells?: unknown[] }).Cells;
+      const firstCell = cells && cells[0];
+      if (
+        firstCell &&
+        typeof firstCell === 'object' &&
+        'Attributes' in firstCell &&
+        Array.isArray((firstCell as { Attributes?: unknown[] }).Attributes)
+      ) {
+        const attrs = (firstCell as { Attributes?: { Id?: string; Value?: string }[] }).Attributes;
+        return attrs?.some((a) => a.Id === 'account' && a.Value === accountId);
+      }
+    }
+    return false;
+  });
 
   // 3) map to all months (zero-fill if missing)
-  const values = row ? row.Cells.slice(1).map((c: any) => parseMoney(c.Value)) : [];
+  const values = row && typeof row === 'object' && 'Cells' in row && Array.isArray((row as { Cells?: unknown[] }).Cells)
+    ? (row as { Cells: { Value: string }[] }).Cells.slice(1).map((c) => parseMoney(c.Value))
+    : [];
   return monthLabels.map((label, i) => ({
     label,
     periodEnd: toIsoFromLabel(label),
-    amount: values[i] ?? 0,
+    amount: values[i] ?? 0
   }));
 }
 
 // --- Main logic factored for GET/POST ---
-async function fetchActuals({ accessToken, year, tenantId, categoryAccountCodes }: any) {
+interface FetchActualsParams {
+  accessToken: string;
+  year: string | number;
+  tenantId: string;
+  categoryAccountCodes: { [category: string]: string };
+}
+
+async function fetchActuals({ accessToken, year, tenantId, categoryAccountCodes }: FetchActualsParams) {
   // ...existing code to set up effectiveCategoryCodes, fetch P&L, etc...
   // Copy from your POST handler up to the point where you have the P&L report as a JS object
 
@@ -182,17 +222,25 @@ export async function GET(req: NextRequest) {
     const accessToken = searchParams.get('accessToken');
     const year = searchParams.get('year') || new Date().getFullYear();
     const tenantId = searchParams.get('tenantId');
-    const categoryAccountCodes = JSON.parse(searchParams.get('categoryAccountCodes') || '{}');
+    let categoryAccountCodes: { [category: string]: string } = {};
+    try {
+      const raw = searchParams.get('categoryAccountCodes');
+      categoryAccountCodes = raw ? JSON.parse(raw as string) : {};
+    } catch (e) {
+      return NextResponse.json({ error: 'Invalid categoryAccountCodes JSON' }, { status: 400 });
+    }
     if (!accessToken || !tenantId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
     const payload = await fetchActuals({ accessToken, year, tenantId, categoryAccountCodes });
     // Transform payload to { months, series, data }
-    const months = payload.data[0]?.months?.map((m: any) => m.label) || [];
-    const series = payload.data.map((cat: any) => ({
-      name: cat.category,
-      data: cat.months.map((m: any) => m.amount)
-    }));
+    const months = Array.isArray(payload.data) && payload.data[0]?.months ? payload.data[0].months.map((m: { label: string }) => m.label) : [];
+    const series = Array.isArray(payload.data)
+      ? payload.data.map((cat: { category: string; months: { amount: number }[] }) => ({
+          name: cat.category,
+          data: Array.isArray(cat.months) ? cat.months.map((m) => m.amount) : []
+        }))
+      : [];
     return NextResponse.json({ months, series, data: payload.data });
   } catch (e: any) {
     return NextResponse.json({ error: e.message || String(e) }, { status: 500 });

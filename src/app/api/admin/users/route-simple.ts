@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { UserRole } from '@/lib/prisma-enums';
 import bcrypt from 'bcryptjs';
 import { sendWelcomeEmail } from '@/lib/email';
 
@@ -9,7 +10,7 @@ class UserService {
       id: '1',
       name: 'Courtney Everest',
       email: 'courtney@futurefocus.co.nz',
-      role: 'MASTER' as const,
+  role: UserRole.MASTER,
       isActive: true,
       organizationId: 'org_1',
       createdAt: new Date(),
@@ -75,7 +76,13 @@ class UserService {
     return this.mockUsers.filter(user => user.organizationId === organizationId);
   }
 
-  async createUser(userData: any) {
+  async createUser(userData: {
+    email: string;
+    password: string;
+    name: string;
+    role: UserRole;
+    organizationId: string;
+  }) {
     console.log('🔄 Creating user:', userData.email);
     await this.testDatabaseConnection();
 
@@ -134,14 +141,14 @@ class UserService {
     }
 
     const newUser = {
-      id: `mock_${Date.now()}`,
-      name: userData.name,
-      email: userData.email,
-      role: userData.role,
-      isActive: true,
-      organizationId: userData.organizationId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+  id: `mock_${Date.now()}`,
+  name: userData.name ?? '',
+  email: userData.email,
+  role: userData.role,
+  isActive: true,
+  organizationId: userData.organizationId ?? '',
+  createdAt: new Date(),
+  updatedAt: new Date(),
     };
 
     this.mockUsers.push(newUser);

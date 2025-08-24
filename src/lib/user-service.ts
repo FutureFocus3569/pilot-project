@@ -89,7 +89,8 @@ class UserService {
             updatedAt: true,
           },
         });
-        return users;
+  // Ensure name is never null
+  return users.map(u => ({ ...u, name: u.name || '' }));
       } catch (error) {
         console.log('Database not available, using mock data');
         this.useDatabase = false;
@@ -103,7 +104,10 @@ class UserService {
     if (this.useDatabase) {
       try {
         const { prisma } = await import('@/lib/prisma');
-        return await prisma.user.findUnique({ where: { id } });
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (user) user.name = user.name ?? '';
+  if (user && user.name == null) user.name = '';
+  return user as User;
       } catch (error) {
         console.log('Database not available, using mock data');
         this.useDatabase = false;
@@ -117,7 +121,10 @@ class UserService {
     if (this.useDatabase) {
       try {
         const { prisma } = await import('@/lib/prisma');
-        return await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (user) user.name = user.name ?? '';
+  if (user && user.name == null) user.name = '';
+  return user as User;
       } catch (error) {
         console.log('Database not available, using mock data');
         this.useDatabase = false;
@@ -182,7 +189,9 @@ class UserService {
           });
         }
 
-        return user;
+  user.name = user.name ?? '';
+  if (user.name == null) user.name = '';
+  return user as Omit<User, 'password'>;
       } catch (error) {
         console.log('Database not available, using mock data');
         this.useDatabase = false;
@@ -216,7 +225,9 @@ class UserService {
             updatedAt: true,
           },
         });
-        return user;
+  user.name = user.name || '';
+  if (user.name == null) user.name = '';
+  return user;
       } catch (error) {
         console.log('Database not available, using mock data');
         this.useDatabase = false;

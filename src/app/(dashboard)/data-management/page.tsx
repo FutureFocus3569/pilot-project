@@ -16,7 +16,7 @@ export default function DataManagementPage() {
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <AlertTriangle className="mx-auto h-12 w-12 text-red-400 mb-4" />
           <h1 className="text-2xl font-bold text-red-800 mb-2">Access Denied</h1>
-          <p className="text-red-600">You don't have permission to access the Data Management page.</p>
+          <p className="text-red-600">You don&apos;t have permission to access the Data Management page.</p>
           <p className="text-red-600 mt-2">Only MASTER users can manage system data.</p>
         </div>
       </div>

@@ -78,7 +78,7 @@ export async function sendWelcomeEmail(
                   <p style="margin: 0; color: #856404;"><strong>Important:</strong> Please change your password after your first login for security purposes.</p>
                 </div>
                 
-                <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+                <p>If you have any questions or need assistance, please don&apos;t hesitate to contact our support team.</p>
                 
                 <p>Best regards,<br>The Childcare Dashboard Team</p>
               </div>

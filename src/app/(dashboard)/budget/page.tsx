@@ -557,9 +557,9 @@ export default function BudgetPage() {
             <h3 className="text-sm font-medium text-blue-900 mb-2">💡 How to use:</h3>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• Click the edit icon next to any budget amount to modify it</li>
-              <li>• Click the edit icon next to "Xero code" to set the chart of account number for each centre/category</li>
+              <li>• Click the edit icon next to &quot;Xero code&quot; to set the chart of account number for each centre/category</li>
               <li>• <strong>Click on any category name</strong> to edit its name, description, or delete it</li>
-              <li>• Use "Add New Category" to create custom budget categories</li>
+              <li>• Use &quot;Add New Category&quot; to create custom budget categories</li>
               <li>• Xero account codes help link budgets to actual spending when integrating with Xero</li>
               <li>• Changes are saved immediately when you click the save icon</li>
               <li>• These budgets will be used in the Xero page for variance reporting</li>

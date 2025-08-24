@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
+import type { Browser, Page } from 'puppeteer';
 
 // Auto-login service using headless browser automation
 class AutoLoginService {
-  private browser: any = null;
+  private browser: Browser | null = null;
 
   async initBrowser() {
     if (!this.browser) {
@@ -13,7 +14,7 @@ class AutoLoginService {
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
     }
-    return this.browser;
+  return this.browser;
   }
 
   async closeBrowser() {
@@ -26,28 +27,23 @@ class AutoLoginService {
   async performAutoLogin(siteUrl: string, username: string, password: string) {
     console.log('🔐 Starting auto-login for:', siteUrl);
     
-    const browser = await this.initBrowser();
-    const page = await browser.newPage();
+  const browser = await this.initBrowser();
+  const page: Page = await browser.newPage();
     
     try {
       // Set user agent to appear like a real browser
       await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36');
-      
       // Navigate to the site
       console.log('📍 Navigating to:', siteUrl);
       await page.goto(siteUrl, { waitUntil: 'networkidle0', timeout: 30000 });
-      
       // Wait a bit for the page to fully load
-      await page.waitForTimeout(2000);
-      
+      await new Promise(res => setTimeout(res, 2000));
       // Try to detect and fill login forms
       const loginResult = await this.detectAndFillLoginForm(page, username, password);
-      
-      if (loginResult.success) {
+      if (loginResult && loginResult.success) {
         // Get cookies after successful login
         const cookies = await page.cookies();
         console.log('✅ Login successful, got', cookies.length, 'cookies');
-        
         return {
           success: true,
           cookies,
@@ -57,10 +53,9 @@ class AutoLoginService {
       } else {
         return {
           success: false,
-          message: loginResult.error || 'Could not detect login form'
+          message: loginResult?.error || 'Could not detect login form'
         };
       }
-      
     } catch (error) {
       console.error('❌ Auto-login error:', error);
       return {
@@ -72,7 +67,7 @@ class AutoLoginService {
     }
   }
 
-  async detectAndFillLoginForm(page: any, username: string, password: string) {
+  async detectAndFillLoginForm(page: unknown, username: string, password: string) {
     try {
       console.log('🔍 Detecting login form...');
       
@@ -97,10 +92,11 @@ class AutoLoginService {
       ];
 
       // Find username field
+      const pageTyped = page as import('puppeteer').Page;
       let usernameField = null;
       for (const selector of usernameSelectors) {
         try {
-          usernameField = await page.$(selector);
+          usernameField = await pageTyped.$(selector);
           if (usernameField) {
             console.log('✅ Found username field:', selector);
             break;
@@ -109,12 +105,11 @@ class AutoLoginService {
           // Continue to next selector
         }
       }
-
       // Find password field
       let passwordField = null;
       for (const selector of passwordSelectors) {
         try {
-          passwordField = await page.$(selector);
+          passwordField = await pageTyped.$(selector);
           if (passwordField) {
             console.log('✅ Found password field:', selector);
             break;
@@ -123,72 +118,53 @@ class AutoLoginService {
           // Continue to next selector
         }
       }
-
-      if (!usernameField || !passwordField) {
-        return {
-          success: false,
-          error: 'Could not find login form fields'
-        };
-      }
-
-      // Fill in credentials
-      console.log('📝 Filling in credentials...');
-      await usernameField.type(username);
-      await passwordField.type(password);
-
-      // Try to find and click submit button
-      const submitSelectors = [
-        'button[type="submit"]',
-        'input[type="submit"]',
-        'button:contains("Sign In")',
-        'button:contains("Log In")',
-        'button:contains("Login")',
-        '[class*="submit"]',
-        '[id*="submit"]'
-      ];
-
-      let submitButton = null;
-      for (const selector of submitSelectors) {
-        try {
-          submitButton = await page.$(selector);
-          if (submitButton) {
-            console.log('✅ Found submit button:', selector);
-            break;
+            // Try to find a submit button
+            const submitSelectors = [
+              'button[type="submit"]',
+              'input[type="submit"]',
+              'button',
+              'input[type="button"]'
+            ];
+            let submitButton = null;
+            let submitSelector = '';
+            for (const selector of submitSelectors) {
+              try {
+                submitButton = await pageTyped.$(selector);
+                if (submitButton) {
+                  submitSelector = selector;
+                  console.log('✅ Found submit button:', selector);
+                  break;
+                }
+              } catch (e) {
+                // Continue to next selector
+              }
+            }
+            if (submitButton) {
+              console.log('🎯 Clicking submit button...');
+              await submitButton.click();
+              // Wait for navigation or login success
+              await new Promise(res => setTimeout(res, 3000));
+              // Check if we're still on login page or redirected
+              const currentUrl = pageTyped.url();
+              console.log('📍 After login attempt, current URL:', currentUrl);
+              return { success: true };
+            } else if (passwordField) {
+              // Try pressing Enter on password field
+              console.log('🔄 No submit button found, trying Enter key...');
+              await passwordField.press('Enter');
+              await new Promise(res => setTimeout(res, 3000));
+              return { success: true };
+            } else {
+              return { success: false, error: 'No login form fields found' };
+            }
+          } catch (error) {
+            console.error('❌ Error in login form detection:', error);
+            return {
+              success: false,
+              error: (error as Error).message
+            };
           }
-        } catch (e) {
-          // Continue to next selector
         }
-      }
-
-      if (submitButton) {
-        console.log('🎯 Clicking submit button...');
-        await submitButton.click();
-        
-        // Wait for navigation or login success
-        await page.waitForTimeout(3000);
-        
-        // Check if we're still on login page or redirected
-        const currentUrl = page.url();
-        console.log('📍 After login attempt, current URL:', currentUrl);
-        
-        return { success: true };
-      } else {
-        // Try pressing Enter on password field
-        console.log('🔄 No submit button found, trying Enter key...');
-        await passwordField.press('Enter');
-        await page.waitForTimeout(3000);
-        
-        return { success: true };
-      }
-
-    } catch (error) {
-      console.error('❌ Error in login form detection:', error);
-      return {
-        success: false,
-        error: (error as Error).message
-      };
-    }
-  }
 }
 
 const autoLoginService = new AutoLoginService();

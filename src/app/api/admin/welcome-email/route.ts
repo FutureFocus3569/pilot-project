@@ -129,7 +129,7 @@ function generateWelcomeEmailHTML(name: string, email: string, tempPassword?: st
                     <li>Collaborate with your team</li>
                 </ul>
                 
-                <p>If you have any questions or need assistance, please don't hesitate to reach out to your administrator.</p>
+                <p>If you have any questions or need assistance, please don&apos;t hesitate to reach out to your administrator.</p>
                 
                 <p>Best regards,<br>
                 <strong>The Future Focus Kids Team</strong></p>

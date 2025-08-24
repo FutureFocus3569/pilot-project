@@ -541,11 +541,11 @@ export default function XeroPage() {
             <div className="mt-2 text-sm text-blue-700">
               <p>
                 This page now shows budgets from your Budget Management system with simulated actuals data. 
-                Once connected to Xero, the "Actual YTD" and monthly columns will show real spending data from your Xero account. 
+                Once connected to Xero, the &quot;Actual YTD&quot; and monthly columns will show real spending data from your Xero account. 
                 Sep-Dec show as blank until data is available.
               </p>
               <p className="mt-2 font-medium">
-                💡 Update budgets in the Budget Management page and click "Refresh Data" to see changes here.
+                💡 Update budgets in the Budget Management page and click &quot;Refresh Data&quot; to see changes here.
               </p>
             </div>
           </div>

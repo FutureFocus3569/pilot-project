@@ -250,7 +250,7 @@ export default function XeroPage() {
           </div>
           <h3 className="text-2xl font-bold text-gray-800 mb-3">No Budget Data Found</h3>
           <p className="text-gray-600 mb-8 max-w-md mx-auto">
-            Set up your budgets in the Budget Management page first, then they'll appear here for comparison with Xero actuals.
+            Set up your budgets in the Budget Management page first, then they&apos;ll appear here for comparison with Xero actuals.
           </p>
           <div className="flex justify-center gap-4">
             <button
@@ -468,11 +468,11 @@ export default function XeroPage() {
             <div className="mt-2 text-sm text-blue-700">
               <p>
                 This page now shows budgets from your Budget Management system with simulated actuals data. 
-                Once connected to Xero, the "Actual YTD" and monthly columns will show real spending data from your Xero account. 
+                Once connected to Xero, the &quot;Actual YTD&quot; and monthly columns will show real spending data from your Xero account. 
                 Sep-Dec show as blank until data is available.
               </p>
               <p className="mt-2 font-medium">
-                💡 Update budgets in the Budget Management page and click "Refresh Data" to see changes here.
+                💡 Update budgets in the Budget Management page and click &quot;Refresh Data&quot; to see changes here.
               </p>
             </div>
           </div>

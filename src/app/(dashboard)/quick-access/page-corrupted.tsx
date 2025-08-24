@@ -2,54 +2,25 @@
 
 import { useState, useEffect } from 'react';
 
-type SavedSite = {
+interface SavedSite {
   id: string;
   name: string;
   url: string;
   username: string;
   password: string; // Will be encrypted in production
-  c      } catch (autoLoginError) {
-        console.log('🔄 Auto-login failed, opening site manually:', autoLoginError);
-        
-        // Get the actual password (in production, this would be decrypted)
-        const actualPassword = site.password.replace(/•/g, ''); // Remove masking if present
-        
-        // Copy credentials to clipboard for easy pasting
-        const credentialsText = `Username: ${site.username}\nPassword: ${actualPassword}`;
-        
-        try {
-          await navigator.clipboard.writeText(credentialsText);
-          console.log('✅ Credentials copied to clipboard');
-        } catch (clipboardError) {
-          console.log('⚠️ Could not copy to clipboard:', clipboardError);
-        }
-        
-        // Open site in new tab
-        window.open(site.url, '_blank');
-        
-        // Show detailed manual login instructions with actual password
-        const instructions = `🌐 Opening ${site.name}...\n\n` +
-              `Your login credentials:\n` +
-              `📧 Username: ${site.username}\n` +
-              `🔑 Password: ${actualPassword}\n\n` +
-              `✅ Credentials have been copied to your clipboard!\n` +
-              `Just paste them into the login form.\n\n` +
-              `💡 Full auto-login coming soon for this site!`;
-        
-        alert(instructions);
-      }k' | 'childcare' | 'hr' | 'accounting' | 'supplies' | 'other';
+  category: 'work' | 'childcare' | 'hr' | 'accounting' | 'supplies' | 'other';
   favicon?: string;
   lastUsed?: string;
   isActive: boolean;
-};
+}
 
-type NewSite = {
+interface NewSite {
   name: string;
   url: string;
   username: string;
   password: string;
   category: 'work' | 'childcare' | 'hr' | 'accounting' | 'supplies' | 'other';
-};
+}
 
 // Pre-defined popular sites for childcare managers
 const POPULAR_SITES = [
@@ -122,27 +93,33 @@ export default function QuickAccessPage() {
             name: 'Discover Childcare',
             url: 'https://discover.childcare.govt.nz',
             username: 'demo@futurefocus.co.nz',
-            password: '••••••••',
+            password: 'password123',
             category: 'childcare',
-            favicon: '🎓',
-            lastUsed: new Date().toISOString(),
-            isActive: true
-          },
-          {
-            id: '2',
-            name: 'MyHR',
-            url: 'https://myhr.co.nz',
-            username: 'courtney.manager',
-            password: '••••••••',
-            category: 'hr',
-            favicon: '👥',
             isActive: true
           }
         ];
         setSavedSites(demoSites);
       }
-    } catch (error) {
-      console.error('Error loading saved sites:', error);
+
+  interface SavedSite {
+    id: string;
+    name: string;
+    url: string;
+    username: string;
+    password: string; // Will be encrypted in production
+    category: 'work' | 'childcare' | 'hr' | 'accounting' | 'supplies' | 'other';
+    favicon?: string;
+    lastUsed?: string;
+    isActive: boolean;
+  }
+
+  interface NewSite {
+    name: string;
+    url: string;
+    username: string;
+    password: string;
+    category: 'work' | 'childcare' | 'hr' | 'accounting' | 'supplies' | 'other';
+  }
     } finally {
       setLoading(false);
     }

@@ -142,7 +142,7 @@ export default function AssistantPage() {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask me about occupancy trends, staff utilization, or any other insights..."
+              placeholder="Ask me about occupancy trends, staff utilization, or any other insights…"
               className="flex-1 resize-none border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               rows={2}
             />

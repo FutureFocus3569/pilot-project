@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { DashboardPage } from '@/lib/prisma-enums';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -10,8 +11,8 @@ export interface CreateUserData {
   role: 'MASTER' | 'ADMIN' | 'USER';
   organizationId: string;
   centreIds?: string[];
-  pagePermissions?: {
-    page: string;
+  pagePermissions: {
+    page: DashboardPage;
     enabled: boolean;
     centreIds?: string[]; // Centre-specific permissions per page
   }[];
@@ -185,7 +186,7 @@ class ProductionUserService {
               await tx.userPagePermission.create({
                 data: {
                   userId: user.id,
-                  page: pagePermission.page as any,
+                  page: pagePermission.page,
                   canAccess: true,
                 }
               });
@@ -224,10 +225,17 @@ class ProductionUserService {
           }
         }
 
-        return user;
+  user.name = user.name || '';
+  return user;
       });
 
       console.log('✅ User created successfully:', result.id);
+      if (result) {
+        return {
+          ...result,
+          name: result.name || '',
+        };
+      }
       return result;
     } catch (error) {
       console.error('❌ Error creating user:', error);
@@ -247,7 +255,7 @@ class ProductionUserService {
     try {
       const result = await prisma.$transaction(async (tx) => {
         // Update basic user data
-        const updatePayload: any = {};
+  const updatePayload: Partial<CreateUserData> = {};
         if (updateData.name) updatePayload.name = updateData.name;
         if (updateData.email) updatePayload.email = updateData.email;
         if (updateData.role) updatePayload.role = updateData.role;
@@ -255,9 +263,13 @@ class ProductionUserService {
           updatePayload.password = await bcrypt.hash(updateData.password, 12);
         }
 
+        // Remove undefined properties from updatePayload
+        const filteredPayload = Object.fromEntries(
+          Object.entries(updatePayload).filter(([_, v]) => v !== undefined)
+        );
         const user = await tx.user.update({
           where: { id: userId },
-          data: updatePayload,
+          data: filteredPayload,
           select: {
             id: true,
             name: true,
@@ -286,7 +298,7 @@ class ProductionUserService {
               await tx.userPagePermission.create({
                 data: {
                   userId: user.id,
-                  page: pagePermission.page as any,
+                  page: pagePermission.page,
                   canAccess: true,
                 }
               });

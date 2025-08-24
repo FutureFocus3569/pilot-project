@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');
     const limit = searchParams.get('limit');
 
-    const where: any = {};
+  const where: Record<string, any> = {};
     
     if (centreId) {
       where.centreId = centreId;
@@ -29,7 +29,6 @@ export async function GET(request: NextRequest) {
           select: {
             name: true,
             code: true,
-            capacity: true,
           },
         },
       },
@@ -51,7 +50,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { centreId, date, u2Count, o2Count, totalCount, capacity } = body;
+  const { centreId, date, u2Count, o2Count, totalCount } = body;
 
     const occupancyData = await prisma.occupancyData.upsert({
       where: {
@@ -64,7 +63,6 @@ export async function POST(request: NextRequest) {
         u2Count,
         o2Count,
         totalCount,
-        capacity,
       },
       create: {
         centreId,
@@ -72,7 +70,6 @@ export async function POST(request: NextRequest) {
         u2Count,
         o2Count,
         totalCount,
-        capacity,
       },
       include: {
         centre: {

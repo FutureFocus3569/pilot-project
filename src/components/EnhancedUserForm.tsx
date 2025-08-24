@@ -153,7 +153,7 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
                 </label>
                 <select
                   value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as string })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="USER">User - Limited access</option>

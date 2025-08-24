@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, RefreshCw } from "lucide-react";
+import { Users, RefreshCw, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface Centre {
   id: string;

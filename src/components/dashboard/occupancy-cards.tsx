@@ -92,11 +92,24 @@ export function OccupancyCards() {
   };
 
   // Helper function to get occupancy data for selected month
-  const getOccupancyForMonth = (centre: any) => {
+  interface OccupancyData {
+    u2Count: number;
+    o2Count: number;
+    totalCount: number;
+    date: string;
+  }
+  interface Centre {
+    id: string;
+    name: string;
+    code: string;
+    capacity: number;
+    occupancyData?: OccupancyData[];
+  }
+  const getOccupancyForMonth = (centre: Centre) => {
     const targetYear = selectedYear;
     const targetMonth = selectedMonth;
     
-    const occupancyData = centre.occupancyData?.find((data: any) => {
+    const occupancyData = centre.occupancyData?.find((data: OccupancyData) => {
       const dataDate = new Date(data.date);
       return dataDate.getFullYear() === targetYear && (dataDate.getMonth() + 1) === targetMonth;
     });
@@ -149,7 +162,7 @@ export function OccupancyCards() {
       const centresData = await response.json();
       
       // Generate mock occupancy data for each centre
-      const centresWithOccupancy = centresData.map((centre: any) => ({
+      const centresWithOccupancy = centresData.map((centre: Centre) => ({
         ...centre,
         occupancyData: generateOccupancyData(centre.capacity || 50)
       }));

@@ -264,7 +264,7 @@ export default function XeroPage() {
         // Find the original budget objects to get xeroAccountCode
         const budgetKey = `budgets_${year}`;
         const storedBudgets = localStorage.getItem(budgetKey);
-        let categoryAccountCodes: Record<string, string> = {};
+  const categoryAccountCodes: Record<string, string> = {};
         if (storedBudgets) {
           const allBudgets = JSON.parse(storedBudgets);
           for (const b of allBudgets) {
@@ -499,7 +499,7 @@ export default function XeroPage() {
           </div>
           <h3 className="text-2xl font-bold text-gray-800 mb-3">No Budget Data Found</h3>
           <p className="text-gray-600 mb-8 max-w-md mx-auto">
-            Set up your budgets in the Budget Management page first, then they'll appear here for comparison with Xero actuals.
+            Set up your budgets in the Budget Management page first, then they&apos;ll appear here for comparison with Xero actuals.
           </p>
           <div className="flex justify-center gap-4">
             <button
@@ -727,7 +727,7 @@ export default function XeroPage() {
                   'Simulated data until Xero connection is established'}</p>
                 <p><strong>📈 Variance Analysis:</strong> Automatic calculation of budget vs actual spending</p>
                 {user?.role === 'MASTER' && !isXeroConnected && (
-                  <p><strong>🔗 Next Step:</strong> Click "Connect to Xero" above to enable live data</p>
+                  <p><strong>🔗 Next Step:</strong> Click &quot;Connect to Xero&quot; above to enable live data</p>
                 )}
                 {user?.role !== 'MASTER' && !isXeroConnected && (
                   <p><strong>ℹ️ Note:</strong> Contact your MASTER user to connect Xero for live data</p>
