@@ -16,7 +16,7 @@ interface PagePermission {
 }
 
 interface EnhancedUserFormProps {
-  onSubmit: (userData: any) => void;
+  onSubmit: (userData: unknown) => void;
   onCancel: () => void;
   centres: Centre[];
 }
@@ -28,6 +28,14 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
     password: '',
     role: 'USER' as 'MASTER' | 'ADMIN' | 'USER',
   });
+
+  // Type guard for userData
+  function isUserData(data: unknown): data is typeof formData {
+    return (
+      typeof data === 'object' && data !== null &&
+      'name' in data && 'email' in data && 'password' in data && 'role' in data
+    );
+  }
 
   const [pagePermissions, setPagePermissions] = useState<PagePermission[]>([
     { page: 'DASHBOARD', enabled: true, centreIds: [] },

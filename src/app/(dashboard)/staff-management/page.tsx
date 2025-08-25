@@ -76,8 +76,8 @@ export default function UserManagementPage() {
         const data = await response.json();
         // Add default permissions to users that come from the API
         const usersWithPermissions = (data.users || []).map((user: any) => ({
-          ...user,
-          permissions: user.permissions || {
+          ...user as Record<string, unknown>,
+          permissions: (user as Record<string, any>).permissions || {
             dashboard: true,
             quickAccess: user.role !== 'USER',
             budget: user.role === 'MASTER' || user.role === 'ADMIN',
