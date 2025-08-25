@@ -1,6 +1,12 @@
-// Category type for sites
+
+'use client';
+
+import { useState, useEffect } from 'react';
+
+// keep this once
 type SiteCategory = 'other' | 'hr' | 'childcare' | 'work' | 'accounting' | 'supplies';
 
+// keep a single NewSite declaration; delete any duplicate elsewhere in this file
 type NewSite = {
   name: string;
   url: string;
@@ -8,9 +14,7 @@ type NewSite = {
   password: string;
   category: SiteCategory;
 };
-'use client';
 
-import { useState, useEffect } from 'react';
 
 interface SavedSite {
   id: string;
@@ -18,18 +22,10 @@ interface SavedSite {
   url: string;
   username: string;
   password: string; // Will be encrypted in production
-  category: 'work' | 'childcare' | 'hr' | 'accounting' | 'supplies' | 'other';
+  category: SiteCategory;
   favicon?: string;
   lastUsed?: string;
   isActive: boolean;
-}
-
-interface NewSite {
-  name: string;
-  url: string;
-  username: string;
-  password: string;
-  category: 'work' | 'childcare' | 'hr' | 'accounting' | 'supplies' | 'other';
 }
 
 // Pre-defined popular sites for childcare managers
@@ -74,7 +70,7 @@ export default function QuickAccessPage() {
     url: '',
     username: '',
     password: '',
-    category: 'work'
+    category: 'work',
   });
 
   // Current user (mock for now)
@@ -527,8 +523,8 @@ export default function QuickAccessPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                       <select
                         value={newSite.category}
-                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                          setNewSite(prev => ({ ...prev, category: e.target.value as SiteCategory }))
+                        onChange={(e) =>
+                          setNewSite(s => ({ ...s, category: e.target.value as SiteCategory }))
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                       >
