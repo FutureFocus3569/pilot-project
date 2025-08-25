@@ -11,13 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email and name required' }, { status: 400 });
     }
 
-    const result = await sendWelcomeEmail({
-      name,
-      email,
-      password: 'test123', // Test password
-      organizationName: 'Future Focus Early Learning',
-      loginUrl: process.env.NEXTAUTH_URL || 'http://localhost:3001'
-    });
+  const result = await sendWelcomeEmail(name, email, 'test123');
 
     if (result.success) {
       return NextResponse.json({ 
