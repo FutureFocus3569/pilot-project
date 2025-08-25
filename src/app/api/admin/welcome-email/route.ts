@@ -1,63 +1,43 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextResponse } from 'next/server';
 import { getSupabaseServer } from '@/lib/supabase';
-
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-// Use getSupabaseServer() inside handler
+export const runtime = 'nodejs';
 
+export async function POST(request: Request) {
   try {
     const supabase = getSupabaseServer();
     if (!supabase) {
       return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
     }
-    const { email, name, tempPassword } = await request.json();
 
-    if (!email || !name) {
-      return NextResponse.json(
-        { error: 'Email and name are required' },
-        { status: 400 }
-      );
-    }
+   const { email, name, tempPassword } = await request.json();
+   if (!email || !name) {
+     return NextResponse.json({ error: 'Email and name are required' }, { status: 400 });
+   }
 
-    // Check if user exists in our database
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
+   // OPTIONAL: ensure user exists
+   const user = await prisma.user.findUnique({ where: { email } }).catch(() => null);
+   if (!user) {
+     return NextResponse.json({ error: 'User not found' }, { status: 404 });
+   }
 
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
+   // Call the Supabase Edge Function to send the welcome email
+   const { data, error } = await supabase.functions.invoke('send-welcome-email', {
+     body: { name, email, password: tempPassword ?? '' },
+   });
+   if (error) {
+     return NextResponse.json({ error: 'Failed to send welcome email' }, { status: 500 });
+   }
 
-    // Create a welcome email using Supabase Edge Function or direct email service
-    // For now, we'll use Supabase's email functionality
-    const emailContent = {
-      to: email,
-      subject: 'Welcome to Future Focus Kids Dashboard',
-      html: generateWelcomeEmailHTML(name, email, tempPassword)
-    };
-
-    // You can integrate with Supabase Edge Functions or any email service here
-    // For this example, I'll show the structure but you'll need to implement
-    // the actual email sending via your preferred method
-
-    console.log('Welcome email would be sent:', emailContent);
-
-    return NextResponse.json(
-      { message: 'Welcome email sent successfully' },
-      { status: 200 }
-    );
-
-  } catch (error) {
-    console.error('Error sending welcome email:', error);
-    return NextResponse.json(
-      { error: 'Failed to send welcome email' },
-      { status: 500 }
-    );
+   return NextResponse.json({ message: 'Welcome email sent successfully', data }, { status: 200 });
+  } catch (e) {
+    return NextResponse.json({ error: 'Failed to send welcome email' }, { status: 500 });
   } finally {
+    await prisma.$disconnect();
+  }
+}
     await prisma.$disconnect();
   }
 }
