@@ -75,7 +75,7 @@ export default function UserManagementPage() {
       if (response.ok) {
         const data = await response.json();
         // Add default permissions to users that come from the API
-        const usersWithPermissions = (data.users || []).map((user: any) => ({
+  const usersWithPermissions = (data.users || []).map((user: User) => ({
           ...user as User,
           permissions: (user as User).permissions || {
             dashboard: true,
