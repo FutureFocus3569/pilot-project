@@ -1,21 +1,8 @@
 
 'use client';
 
-
 import { useState, useEffect } from 'react';
 import type { SiteCategory, NewSite } from '@/types/quick-access';
-
-
-  id: string;
-  name: string;
-  url: string;
-  username: string;
-  password: string; // Will be encrypted in production
-  category: SiteCategory;
-  favicon?: string;
-  lastUsed?: string;
-  isActive: boolean;
-}
 
 // Pre-defined popular sites for childcare managers
 const POPULAR_SITES = [
