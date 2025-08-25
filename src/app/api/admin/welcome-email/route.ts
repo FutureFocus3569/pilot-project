@@ -39,26 +39,20 @@ export async function POST(request: Request) {
   }
 }
     await prisma.$disconnect();
-  }
-}
-
-function generateWelcomeEmailHTML(name: string, email: string, tempPassword?: string): string {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Welcome to Future Focus Kids</title>
-        <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
-            .container { max-width: 600px; margin: 0 auto; background-color: white; }
-            .header { background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); padding: 40px 30px; text-align: center; }
-            .header h1 { color: white; margin: 0; font-size: 28px; font-weight: 600; }
             .header p { color: #bfdbfe; margin: 10px 0 0 0; font-size: 16px; }
             .content { padding: 40px 30px; }
             .welcome { font-size: 20px; color: #1f2937; margin-bottom: 20px; }
             .credentials { background-color: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0; }
+
+    // Call the Supabase Edge Function to send the welcome email
+    const { data, error } = await supabase.functions.invoke('send-welcome-email', {
+      body: { name, email, password: tempPassword ?? '' },
+    });
+    if (error) {
+      return NextResponse.json({ error: 'Failed to send welcome email' }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Welcome email sent successfully', data }, { status: 200 });
             .credentials h3 { margin: 0 0 15px 0; color: #374151; }
             .credential-item { margin: 10px 0; }
             .credential-label { font-weight: 600; color: #6b7280; }

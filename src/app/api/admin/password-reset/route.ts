@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServer } from '@/lib/supabase';
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
-
 export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
@@ -17,12 +14,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // OPTIONAL: Verify the user exists in our DB before sending reset
-    const user = await prisma.user.findUnique({ where: { email } }).catch(() => null);
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.com'}/auth/update-password`,
     });
@@ -31,10 +22,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ message: 'Password reset email sent successfully' }, { status: 200 });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to send password reset email' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
   }
