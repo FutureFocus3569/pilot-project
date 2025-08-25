@@ -1,3 +1,13 @@
+// Category type for sites
+type SiteCategory = 'other' | 'hr' | 'childcare' | 'work' | 'accounting' | 'supplies';
+
+type NewSite = {
+  name: string;
+  url: string;
+  username: string;
+  password: string;
+  category: SiteCategory;
+};
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -517,7 +527,9 @@ export default function QuickAccessPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                       <select
                         value={newSite.category}
-                        onChange={(e) => setNewSite({ ...newSite, category: e.target.value as string })}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                          setNewSite(prev => ({ ...prev, category: e.target.value as SiteCategory }))
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                       >
                         <option value="work">💼 Work</option>
