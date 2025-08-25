@@ -6,6 +6,38 @@ export async function sendWelcomeEmail(
   password: string
 ): Promise<EmailResult> {
   try {
+    // Correct: try/catch wraps the call; body is a plain object
+    const { data, error } = await supabase.functions.invoke('send-welcome-email', {
+      body: { name, email, password },
+    });
+
+    if (error) {
+      console.error('Supabase function error:', error);
+      return { success: false, error: (error as any)?.message ?? String(error) };
+    }
+
+    // If the edge function returns { success, error? }, pass it through
+    if (data && typeof data === 'object' && 'success' in (data as any)) {
+      const d = data as { success: boolean; error?: string };
+      return d.success ? { success: true } : { success: false, error: d.error ?? 'Unknown failure' };
+    }
+
+    // Otherwise treat a no-error response as success
+    return { success: true };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('sendWelcomeEmail failed:', msg);
+    return { success: false, error: msg };
+  }
+}
+export type EmailResult = { success: boolean; error?: string };
+
+export async function sendWelcomeEmail(
+  name: string,
+  email: string,
+  password: string
+): Promise<EmailResult> {
+  try {
     // Call Supabase Edge Function correctly: try/catch OUTSIDE the body
     const { data, error } = await supabase.functions.invoke('send-welcome-email', {
       body: { name, email, password },
