@@ -1,22 +1,11 @@
 
 'use client';
 
+
 import { useState, useEffect } from 'react';
-
-// keep this once
-type SiteCategory = 'other' | 'hr' | 'childcare' | 'work' | 'accounting' | 'supplies';
-
-// keep a single NewSite declaration; delete any duplicate elsewhere in this file
-type NewSite = {
-  name: string;
-  url: string;
-  username: string;
-  password: string;
-  category: SiteCategory;
-};
+import type { SiteCategory, NewSite } from '@/types/quick-access';
 
 
-interface SavedSite {
   id: string;
   name: string;
   url: string;
@@ -65,12 +54,16 @@ export default function QuickAccessPage() {
   const [savedSites, setSavedSites] = useState<SavedSite[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const CATEGORY_OPTIONS: SiteCategory[] = [
+    'work', 'hr', 'childcare', 'accounting', 'supplies', 'other',
+  ];
+
   const [newSite, setNewSite] = useState<NewSite>({
     name: '',
     url: '',
     username: '',
     password: '',
-    category: 'work',
+    category: 'supplies',
   });
 
   // Current user (mock for now)
@@ -526,6 +519,11 @@ export default function QuickAccessPage() {
                         onChange={(e) =>
                           setNewSite(s => ({ ...s, category: e.target.value as SiteCategory }))
                         }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      >
+                        {CATEGORY_OPTIONS.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                       >
                         <option value="work">💼 Work</option>

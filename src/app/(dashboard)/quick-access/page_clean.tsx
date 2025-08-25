@@ -1,6 +1,8 @@
 'use client';
 
+
 import { useState, useEffect } from 'react';
+import type { SiteCategory, NewSite } from '@/types/quick-access';
 
 type SavedSite = {
   id: string;
@@ -8,20 +10,11 @@ type SavedSite = {
   url: string;
   username: string;
   password: string; // Will be encrypted in production
-  category: 'supplies' | 'other';
+  category: SiteCategory;
   centre?: string; // New field for centre name
   favicon?: string;
   lastUsed?: string;
   isActive: boolean;
-};
-
-type NewSite = {
-  name: string;
-  url: string;
-  username: string;
-  password: string;
-  category: 'supplies' | 'other';
-  centre?: string; // New field for centre name
 };
 
 export default function QuickAccessPage() {
@@ -30,12 +23,16 @@ export default function QuickAccessPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingSite, setEditingSite] = useState<SavedSite | null>(null);
   const [loading, setLoading] = useState(true);
+  const CATEGORY_OPTIONS: SiteCategory[] = [
+    'work', 'hr', 'childcare', 'accounting', 'supplies', 'other',
+  ];
+
   const [newSite, setNewSite] = useState<NewSite>({
     name: '',
     url: '',
     username: '',
     password: '',
-    category: 'other',
+    category: 'supplies',
     centre: ''
   });
 
@@ -573,14 +570,15 @@ export default function QuickAccessPage() {
                     >
                       <option value="supplies">🛒 Supplies</option>
                       <option value="other">🔗 Other</option>
+                    <select
+                      value={newSite.category}
+                      onChange={(e) => setNewSite(s => ({ ...s, category: e.target.value as SiteCategory }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {CATEGORY_OPTIONS.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
                     </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
-                    <div className="relative">
-                      <input
-                        type="url"
                         required
                         value={newSite.url}
                         onChange={(e) => setNewSite({ ...newSite, url: e.target.value })}
