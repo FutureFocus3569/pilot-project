@@ -1,3 +1,4 @@
+export type EmailResult = { success: boolean; error?: string };
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
@@ -5,64 +6,64 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function sendWelcomeEmail(
-  userEmail: string,
-  userName: string,
-  temporaryPassword: string
-): Promise<boolean> {
+  name: string,
+  email: string,
+  password: string
+): Promise<EmailResult> {
   try {
     console.log('Attempting to send welcome email via Supabase Edge Function...');
     
     // Try Supabase Edge Function first
     const { data, error } = await supabase.functions.invoke('send-welcome-email', {
       body: {
-        email: userEmail,
-        name: userName,
-        temporaryPassword: temporaryPassword,
-      },
-    });
+        try {
+          console.log('Attempting to send welcome email via Supabase Edge Function...');
+          // Try Supabase Edge Function first
+          const { data, error } = await supabase.functions.invoke('send-welcome-email', {
+            body: {
+              email,
+              name,
+              temporaryPassword: password,
+            },
+          });
 
-    if (error) {
-      console.error('Supabase Edge Function error:', error);
-      throw error;
-    }
+          if (error) {
+            console.error('Supabase Edge Function error:', error);
+            throw error;
+          }
 
-    if (data?.success) {
-      console.log('Email sent successfully via Supabase Edge Function');
-      return true;
-    } else {
-      throw new Error(data?.error || 'Unknown error from Supabase Edge Function');
-    }
-  } catch (supabaseError) {
-    console.error('Supabase email failed, trying Resend fallback:', supabaseError);
-    
-    // Fallback to direct Resend API
-    try {
-      const { Resend } = await import('resend');
-      const resend = new Resend(process.env.RESEND_API_KEY);
+          if (data?.success) {
+            console.log('Email sent successfully via Supabase Edge Function');
+            return { success: true };
+          } else {
+            throw new Error(data?.error || 'Unknown error from Supabase Edge Function');
+          }
+        } catch (supabaseError) {
+          console.error('Supabase email failed, trying Resend fallback:', supabaseError);
+          // Fallback to direct Resend API
+          try {
+            const { Resend } = await import('resend');
+            const resend = new Resend(process.env.RESEND_API_KEY);
+            const { data, error } = await resend.emails.send({
+              from: process.env.FROM_EMAIL || 'onboarding@resend.dev',
+              to: [email],
+              subject: 'Welcome to Childcare Dashboard',
+              html: `...` // ...existing code...
+            });
 
-      const { data, error } = await resend.emails.send({
-        from: process.env.FROM_EMAIL || 'onboarding@resend.dev',
-        to: [userEmail],
-        subject: 'Welcome to Childcare Dashboard',
-        html: `
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <title>Welcome to Childcare Dashboard</title>
-            </head>
-            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; color: white; border-radius: 10px 10px 0 0;">
-                <h1 style="margin: 0; font-size: 28px;">Welcome to Childcare Dashboard!</h1>
-              </div>
-              
-              <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
-                <h2 style="color: #667eea; margin-top: 0;">Hello ${userName}!</h2>
-                
-                <p>Welcome to the Childcare Dashboard! Your account has been successfully created and you can now access the system.</p>
-                
-                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
-                  <h3 style="margin-top: 0; color: #667eea;">Your Login Details:</h3>
+            if (error) {
+              console.error('Resend fallback error:', error);
+              throw error;
+            }
+
+            console.log('Email sent successfully via Resend fallback');
+            return { success: true };
+          } catch (resendError) {
+            const msg = resendError instanceof Error ? resendError.message : String(resendError);
+            console.error('Both Supabase and Resend failed:', msg);
+            return { success: false, error: msg };
+          }
+        }
                   <p><strong>Email:</strong> ${userEmail}</p>
                   <p><strong>Temporary Password:</strong> <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">${temporaryPassword}</code></p>
                 </div>

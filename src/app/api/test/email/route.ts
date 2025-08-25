@@ -1,36 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { sendWelcomeEmail } from '@/lib/email';
 
-// POST /api/test/email - Test email sending
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { email, name } = body;
-
-    if (!email || !name) {
-      return NextResponse.json({ error: 'Email and name required' }, { status: 400 });
-    }
-
+export async function POST(req: Request) {
+  const { name, email } = await req.json();
   const result = await sendWelcomeEmail(name, email, 'test123');
 
-    if (result.success) {
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Test email sent successfully',
-        messageId: result.messageId 
-      });
-    } else {
-      return NextResponse.json({ 
-        success: false, 
-        error: result.error 
-      }, { status: 500 });
-    }
-
-  } catch (error) {
-    console.error('Test email error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to send test email',
-      details: error 
-    }, { status: 500 });
+  if (result.success) {
+    return NextResponse.json({ success: true, message: 'Test email sent successfully' });
   }
+  return NextResponse.json(
+    { success: false, error: result.error ?? 'Failed to send test email' },
+    { status: 500 }
+  );
 }
