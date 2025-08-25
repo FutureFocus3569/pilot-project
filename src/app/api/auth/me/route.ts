@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
-import type { UserRole } from '@/types/user';
-import { toUserRole, isAdminRole } from '@/lib/roles';
+import { isAdminRole, isMasterRole } from '@/lib/roles';
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,19 +13,17 @@ export async function GET(req: NextRequest) {
       );
     }
 
-  // Normalize and widen the type
-  const role: UserRole = toUserRole(user.role);
-  const isAdmin = isAdminRole(role);
+  const isAdmin = isAdminRole(user.role);
 
     const mockUserData = {
       id: user.userId,
       email: user.email,
-      role,
-      name: role === 'MASTER' ? 'Master User' : 
-            role === 'ADMIN' ? 'Admin User' : 'Regular User',
+      role: user.role,
+      name: isMasterRole(user.role) ? 'Master User' : 
+            isAdminRole(user.role) ? 'Admin User' : 'Regular User',
       isActive: true,
       organizationId: user.organizationId,
-      centrePermissions: role === 'MASTER' ? [] : [
+      centrePermissions: isMasterRole(user.role) ? [] : [
         {
           centreId: 'centre_1',
           centreName: 'Papamoa Beach',
@@ -35,11 +32,11 @@ export async function GET(req: NextRequest) {
             canViewOccupancy: true,
             canEditOccupancy: isAdmin,
             canViewFinancials: isAdmin,
-            canEditFinancials: role === 'MASTER',
+            canEditFinancials: isMasterRole(user.role),
             canViewEnrollments: true,
             canEditEnrollments: isAdmin,
             canViewReports: true,
-            canManageStaff: role === 'MASTER',
+            canManageStaff: isMasterRole(user.role),
           }
         }
       ]
