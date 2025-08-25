@@ -3,13 +3,14 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+type Ctx = { params: Promise<{ id: string }> };
+
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  ctx: Ctx
 ) {
   try {
-    const { id: userId } = await params;
-
+    const { id: userId } = await ctx.params;
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
       where: { id: userId }
@@ -53,10 +54,10 @@ export async function DELETE(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  ctx: Ctx
 ) {
   try {
-    const { id: userId } = await params;
+    const { id: userId } = await ctx.params;
     const body = await request.json();
     const { name, email, role, isActive, pagePermissions, centreIds } = body;
 

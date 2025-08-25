@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { userService } from '@/lib/user-service';
 import { requireRole } from '@/lib/auth';
 
+type Ctx = { params: Promise<{ id: string }> };
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: Ctx
 ) {
   try {
     const authResult = requireRole(req, ['MASTER', 'ADMIN']);
@@ -12,7 +14,8 @@ export async function GET(
       return authResult;
     }
 
-    const user = await userService.getUserById(params.id);
+    const { id } = await ctx.params;
+    const user = await userService.getUserById(id);
     
     if (!user) {
       return NextResponse.json(
@@ -37,7 +40,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: Ctx
 ) {
   try {
     const authResult = requireRole(req, ['MASTER']);
@@ -47,7 +50,8 @@ export async function PUT(
 
     const { name, email, role, isActive, centreIds } = await req.json();
 
-    const user = await userService.updateUser(params.id, {
+    const { id } = await ctx.params;
+    const user = await userService.updateUser(id, {
       name,
       email,
       role,
@@ -78,7 +82,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: Ctx
 ) {
   try {
     const authResult = requireRole(req, ['MASTER']);
@@ -86,7 +90,8 @@ export async function DELETE(
       return authResult;
     }
 
-    const success = await userService.deleteUser(params.id);
+    const { id } = await ctx.params;
+    const success = await userService.deleteUser(id);
 
     if (!success) {
       return NextResponse.json(
