@@ -11,6 +11,7 @@ const compat = new FlatCompat({
 
 
 const eslintConfig = [
+  { ignores: ['src/scratch/**'] },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   // Override to disable no-explicit-any for API and lib files (temporary fix for build)
   {
