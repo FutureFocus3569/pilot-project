@@ -90,7 +90,16 @@ class UserService {
           },
         });
   // Ensure name is never null
-  return users.map(u => ({ ...u, name: u.name || '' }));
+  return users.map(u => ({
+    id: u.id,
+    name: u.name ?? '',
+    organizationId: u.organizationId,
+    createdAt: u.createdAt,
+    updatedAt: u.updatedAt,
+    isActive: u.isActive,
+    email: u.email,
+    role: u.role,
+  }));
       } catch (error) {
         console.log('Database not available, using mock data');
         this.useDatabase = false;
@@ -189,9 +198,17 @@ class UserService {
           });
         }
 
-  user.name = user.name ?? '';
-  if (user.name == null) user.name = '';
-  return user as Omit<User, 'password'>;
+  const apiUser: Omit<User, 'password'> = {
+    id: user.id,
+    name: user.name ?? '',
+    organizationId: user.organizationId,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    isActive: user.isActive,
+    email: user.email,
+    role: user.role,
+  };
+  return apiUser;
       } catch (error) {
         console.log('Database not available, using mock data');
         this.useDatabase = false;
@@ -225,9 +242,17 @@ class UserService {
             updatedAt: true,
           },
         });
-  user.name = user.name || '';
-  if (user.name == null) user.name = '';
-  return user;
+  const apiUser: Omit<User, 'password'> = {
+    id: user.id,
+    name: user.name ?? '',
+    organizationId: user.organizationId,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    isActive: user.isActive,
+    email: user.email,
+    role: user.role,
+  };
+  return apiUser;
       } catch (error) {
         console.log('Database not available, using mock data');
         this.useDatabase = false;
