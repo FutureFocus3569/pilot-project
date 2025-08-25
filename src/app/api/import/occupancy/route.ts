@@ -86,10 +86,9 @@ export async function POST(request: NextRequest) {
         // Parse occupancy numbers
         const u2Count = parseInt(row.u2) || 0;
         const o2Count = parseInt(row.o2) || 0;
-        const totalOccupancy = parseInt(row.total) || 0;
 
-        // Insert or update occupancy data
-        await prisma.occupancyData.upsert({
+        // Insert or update occupancy data (do not persist totalOccupancy)
+        const record = await prisma.occupancyData.upsert({
           where: {
             centreId_date: {
               centreId: centre.id,
@@ -99,17 +98,26 @@ export async function POST(request: NextRequest) {
           update: {
             u2Count,
             o2Count,
-            totalOccupancy,
           },
           create: {
             centreId: centre.id,
             date: date,
             u2Count,
             o2Count,
-            totalOccupancy,
+          },
+          select: {
+            id: true,
+            centreId: true,
+            date: true,
+            u2Count: true,
+            o2Count: true,
           },
         });
 
+        // Compute totalOccupancy in-memory for the response
+        const totalOccupancy = record.u2Count + record.o2Count;
+
+        // Optionally, collect records for response (not implemented here)
         successCount++;
       } catch (error) {
         console.error(`Error processing row ${index + 1}:`, error);
