@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
 import type { UserRole } from '@/types/user';
+import { toUserRole, isAdminRole } from '@/lib/roles';
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,9 +14,9 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Normalize whatever the DB returns and widen the type
-    const role = String(user.role).toUpperCase() as UserRole;
-    const isAdmin = role === 'ADMIN' || role === 'MASTER';
+  // Normalize and widen the type
+  const role: UserRole = toUserRole(user.role);
+  const isAdmin = isAdminRole(role);
 
     const mockUserData = {
       id: user.userId,
