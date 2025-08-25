@@ -1,3 +1,11 @@
+// Define XeroToken type
+export type XeroToken = {
+  access_token: string;
+  refresh_token: string;
+  expires_in?: number;
+  token_type?: string;
+  scope?: string;
+};
 // scripts/xero-refresh-and-sync.ts
 // Example Node.js script to refresh Xero token and run your nightly sync
 
@@ -32,7 +40,7 @@ async function updateTokensForCompany(id: string, access_token: string, refresh_
   }
 }
 
-async function refreshXeroToken(refreshToken: string) {
+async function refreshXeroToken(refreshToken: string): Promise<XeroToken> {
   console.log('[XERO DEBUG] Refreshing Xero token with refresh_token:', refreshToken);
   // Replace with your Xero client credentials
   const XERO_CLIENT_ID = process.env.XERO_CLIENT_ID;
@@ -57,7 +65,11 @@ async function refreshXeroToken(refreshToken: string) {
     throw new Error('Failed to refresh Xero token: ' + JSON.stringify(tokenData));
   }
   console.log('[XERO DEBUG] Refresh token response:', tokenData);
-  return tokenData;
+  // Type guard to ensure tokenData is XeroToken
+  if (!tokenData || typeof tokenData !== 'object' || !('access_token' in tokenData) || !('refresh_token' in tokenData)) {
+    throw new Error('refreshXeroToken: Response is not a valid XeroToken');
+  }
+  return tokenData as XeroToken;
 }
 
 async function runNightlySync() {
