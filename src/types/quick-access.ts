@@ -12,4 +12,5 @@ export type NewSite = {
   username: string;
   password: string;
   category: SiteCategory;
+  centre?: string; // optional so '' is fine
 };
