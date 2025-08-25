@@ -84,7 +84,7 @@ export default function BudgetManagement({ onClose }: BudgetManagementProps) {
       // Try to load categories from API, but merge with any custom ones from localStorage
       try {
         const categoriesResponse = await fetch('/api/budget/categories');
-  const apiCategories = [];
+  let apiCategories = [];
         if (categoriesResponse.ok) {
           const categoriesData = await categoriesResponse.json();
           apiCategories = Array.isArray(categoriesData) ? categoriesData : [];
