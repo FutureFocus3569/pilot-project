@@ -83,11 +83,12 @@ export async function POST(request: NextRequest) {
         // Create date for first day of the month
         const date = new Date(year, monthIndex, 1);
 
-        // Parse occupancy numbers
-        const u2Count = parseInt(row.u2) || 0;
-        const o2Count = parseInt(row.o2) || 0;
+        // Parse occupancy numbers as numbers
+        const u2Count = Number(row.u2 ?? 0);
+        const o2Count = Number(row.o2 ?? 0);
+        const totalCount = u2Count + o2Count;
 
-        // Insert or update occupancy data (do not persist totalOccupancy)
+        // Insert or update occupancy data with required totalCount
         const record = await prisma.occupancyData.upsert({
           where: {
             centreId_date: {
@@ -98,12 +99,14 @@ export async function POST(request: NextRequest) {
           update: {
             u2Count,
             o2Count,
+            totalCount,
           },
           create: {
             centreId: centre.id,
             date: date,
             u2Count,
             o2Count,
+            totalCount,
           },
           select: {
             id: true,
@@ -111,11 +114,9 @@ export async function POST(request: NextRequest) {
             date: true,
             u2Count: true,
             o2Count: true,
+            totalCount: true,
           },
         });
-
-        // Compute totalOccupancy in-memory for the response
-        const totalOccupancy = record.u2Count + record.o2Count;
 
         // Optionally, collect records for response (not implemented here)
         successCount++;
