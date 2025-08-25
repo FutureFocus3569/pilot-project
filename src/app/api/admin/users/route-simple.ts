@@ -204,12 +204,11 @@ export async function POST(request: NextRequest) {
     // Send welcome email after successful user creation
     try {
       console.log('📧 Attempting to send welcome email to:', email);
-      const emailSent = await sendWelcomeEmail(email, name, password);
-      
-      if (emailSent) {
+      const { success, error: emailErrorMsg } = await sendWelcomeEmail(name, email, password);
+      if (success) {
         console.log(`✅ Welcome email sent to ${email}`);
       } else {
-        console.log(`⚠️ Failed to send welcome email to ${email}`);
+        console.log(`⚠️ Failed to send welcome email to ${email}: ${emailErrorMsg ?? ''}`);
       }
     } catch (emailError) {
       console.error('⚠️ Email error:', emailError);
