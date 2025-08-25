@@ -1,4 +1,36 @@
 export type EmailResult = { success: boolean; error?: string };
+
+export async function sendWelcomeEmail(
+  name: string,
+  email: string,
+  password: string
+): Promise<EmailResult> {
+  try {
+    // Call Supabase Edge Function correctly: try/catch OUTSIDE the body
+    const { data, error } = await supabase.functions.invoke('send-welcome-email', {
+      body: { name, email, password },
+    });
+
+    if (error) {
+      console.error('Supabase function error:', error);
+      return { success: false, error: (error as any)?.message ?? String(error) };
+    }
+
+    // If the function returns a shape with { success, error? }, respect it
+    if (data && typeof data === 'object' && 'success' in (data as any)) {
+      const d = data as { success: boolean; error?: string };
+      return d.success ? { success: true } : { success: false, error: d.error ?? 'Unknown failure' };
+    }
+
+    // Otherwise, treat lack of error as success
+    return { success: true };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('sendWelcomeEmail failed:', msg);
+    return { success: false, error: msg };
+  }
+}
+export type EmailResult = { success: boolean; error?: string };
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
