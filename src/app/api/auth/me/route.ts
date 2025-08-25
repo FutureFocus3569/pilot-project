@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
+import type { UserRole } from '@/types/user';
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,29 +13,32 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Mock user data based on JWT token
+    // Normalize whatever the DB returns and widen the type
+    const role = String(user.role).toUpperCase() as UserRole;
+    const isAdmin = role === 'ADMIN' || role === 'MASTER';
+
     const mockUserData = {
       id: user.userId,
       email: user.email,
-      role: user.role,
-      name: user.role === 'MASTER' ? 'Master User' : 
-            user.role === 'ADMIN' ? 'Admin User' : 'Regular User',
+      role,
+      name: role === 'MASTER' ? 'Master User' : 
+            role === 'ADMIN' ? 'Admin User' : 'Regular User',
       isActive: true,
       organizationId: user.organizationId,
-      centrePermissions: user.role === 'MASTER' ? [] : [
+      centrePermissions: role === 'MASTER' ? [] : [
         {
           centreId: 'centre_1',
           centreName: 'Papamoa Beach',
           centreCode: 'CC1',
           permissions: {
             canViewOccupancy: true,
-            canEditOccupancy: user.role === 'ADMIN' || user.role === 'MASTER',
-            canViewFinancials: user.role === 'ADMIN' || user.role === 'MASTER',
-            canEditFinancials: user.role === 'MASTER',
+            canEditOccupancy: isAdmin,
+            canViewFinancials: isAdmin,
+            canEditFinancials: role === 'MASTER',
             canViewEnrollments: true,
-            canEditEnrollments: user.role === 'ADMIN' || user.role === 'MASTER',
+            canEditEnrollments: isAdmin,
             canViewReports: true,
-            canManageStaff: user.role === 'MASTER',
+            canManageStaff: role === 'MASTER',
           }
         }
       ]
