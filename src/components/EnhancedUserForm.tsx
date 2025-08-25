@@ -1,3 +1,4 @@
+type Role = 'MASTER' | 'ADMIN' | 'USER';
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Building2, CheckSquare, Square } from 'lucide-react';
 
@@ -22,11 +23,16 @@ interface EnhancedUserFormProps {
 }
 
 export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    email: string;
+    password: string;
+    role: Role;
+  }>({
     name: '',
     email: '',
     password: '',
-    role: 'USER' as 'MASTER' | 'ADMIN' | 'USER',
+    role: 'USER',
   });
 
   // Type guard for userData
@@ -161,7 +167,10 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
                 </label>
                 <select
                   value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as string })}
+                  onChange={(e) => {
+                    const value = e.target.value as Role;
+                    setFormData(prev => ({ ...prev, role: value }));
+                  }}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="USER">User - Limited access</option>
