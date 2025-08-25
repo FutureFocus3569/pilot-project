@@ -43,9 +43,8 @@ export async function GET(req: NextRequest) {
   }
   // Store tokens in Supabase xero_connections table
   try {
-    const supabaseUrl = process.env.SUPABASE_URL!;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+  const supabase = getSupabaseServer();
+  if (!supabase) throw new Error('Supabase not configured');
 
     // You may want to identify the correct row by tenant_id or company_name
     // For now, we assume tenant_id is available in tokenData or state

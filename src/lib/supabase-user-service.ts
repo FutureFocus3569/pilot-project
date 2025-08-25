@@ -1,10 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseServer } from '@/lib/supabase';
 import bcrypt from 'bcryptjs';
 
-// Simple Supabase client for direct database access
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Use getSupabaseServer() inside functions instead of top-level client
 
 export interface CreateUserData {
   name: string;
