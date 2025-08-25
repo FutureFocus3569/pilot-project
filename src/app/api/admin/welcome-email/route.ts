@@ -6,37 +6,46 @@ const prisma = new PrismaClient();
 export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
-  try {
-    const supabase = getSupabaseServer();
-    if (!supabase) {
-      return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
-    }
-
-   const { email, name, tempPassword } = await request.json();
-   if (!email || !name) {
-     return NextResponse.json({ error: 'Email and name are required' }, { status: 400 });
-   }
-
-   // OPTIONAL: ensure user exists
-   const user = await prisma.user.findUnique({ where: { email } }).catch(() => null);
-   if (!user) {
-     return NextResponse.json({ error: 'User not found' }, { status: 404 });
-   }
-
-   // Call the Supabase Edge Function to send the welcome email
-   const { data, error } = await supabase.functions.invoke('send-welcome-email', {
-     body: { name, email, password: tempPassword ?? '' },
-   });
-   if (error) {
-     return NextResponse.json({ error: 'Failed to send welcome email' }, { status: 500 });
-   }
-
-   return NextResponse.json({ message: 'Welcome email sent successfully', data }, { status: 200 });
-  } catch (e) {
-    return NextResponse.json({ error: 'Failed to send welcome email' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
+  const supabase = getSupabaseServer();
+  if (!supabase) {
+    return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
   }
+
+  const { email, name, tempPassword } = await request.json();
+  if (!email || !name) {
+    return NextResponse.json({ error: 'Email and name are required' }, { status: 400 });
+  }
+
+  const { error } = await supabase.functions.invoke('send-welcome-email', {
+    body: { name, email, password: tempPassword ?? '' },
+  });
+
+  if (error) {
+    return NextResponse.json({ error: 'Failed to send welcome email' }, { status: 500 });
+  }
+
+  return NextResponse.json({ message: 'Welcome email sent successfully' }, { status: 200 });
+}
+export async function POST(request: Request) {
+  const supabase = getSupabaseServer();
+  if (!supabase) {
+    return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
+  }
+
+  const { email, name, tempPassword } = await request.json();
+  if (!email || !name) {
+    return NextResponse.json({ error: 'Email and name are required' }, { status: 400 });
+  }
+
+  const { error } = await supabase.functions.invoke('send-welcome-email', {
+    body: { name, email, password: tempPassword ?? '' },
+  });
+
+  if (error) {
+    return NextResponse.json({ error: 'Failed to send welcome email' }, { status: 500 });
+  }
+
+  return NextResponse.json({ message: 'Welcome email sent successfully' }, { status: 200 });
 }
     await prisma.$disconnect();
             .header p { color: #bfdbfe; margin: 10px 0 0 0; font-size: 16px; }
