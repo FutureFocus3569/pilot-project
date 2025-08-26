@@ -51,6 +51,9 @@ class SupabaseUserService {
       // Hash the password
       const hashedPassword = await bcrypt.hash(userData.password, 12);
       
+      // Get supabase client
+  const supabase = getSupabaseServer();
+  if (!supabase) throw new Error('Supabase not configured');
       // Try to insert into Supabase
       const { data, error } = await supabase
         .from('users')
@@ -117,6 +120,9 @@ class SupabaseUserService {
 
   async getAllUsers(organizationId: string): Promise<SimpleUser[]> {
     try {
+      // Get supabase client
+  const supabase = getSupabaseServer();
+  if (!supabase) throw new Error('Supabase not configured');
       // Try to fetch from Supabase
       const { data, error } = await supabase
         .from('users')
@@ -129,7 +135,7 @@ class SupabaseUserService {
       }
 
       console.log('✅ Users fetched from database:', data.length);
-      return data.map(user => ({
+  return data.map((user: any) => ({
         id: user.id,
         name: user.name,
         email: user.email,
@@ -147,6 +153,8 @@ class SupabaseUserService {
 
   async testConnection(): Promise<{ connected: boolean; message: string }> {
     try {
+  const supabase = getSupabaseServer();
+  if (!supabase) throw new Error('Supabase not configured');
       const { data, error } = await supabase
         .from('users')
         .select('count')

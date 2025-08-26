@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getSupabaseServer } from '../../../../lib/supabase';
 // You should set these in your .env.local file for security
 const XERO_CLIENT_ID = process.env.XERO_CLIENT_ID!;
 const XERO_CLIENT_SECRET = process.env.XERO_CLIENT_SECRET!;
