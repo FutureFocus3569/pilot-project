@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServer } from '@/lib/supabase';
-export const runtime = 'nodejs';
-import { NextResponse } from 'next/server';
-import { getSupabaseServer } from '@/lib/supabase';
-export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   const supabase = getSupabaseServer();
@@ -25,6 +21,4 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ message: 'Password reset email sent successfully' }, { status: 200 });
-}
-  }
 }
