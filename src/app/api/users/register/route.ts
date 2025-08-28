@@ -4,12 +4,12 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, password, role, organizationId, centreIds } = await req.json();
+  const { name, email, password, role, centreId, centreIds } = await req.json();
 
     // Validate required fields
-    if (!name || !email || !password || !organizationId) {
+    if (!name || !email || !password || !centreId) {
       return NextResponse.json(
-        { error: 'Name, email, password, and organization are required' },
+        { error: 'Name, email, password, and centre are required' },
         { status: 400 }
       );
     }
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         email,
         password: hashedPassword,
         role: role || 'USER',
-        organizationId,
+        centreId,
       },
       select: {
         id: true,

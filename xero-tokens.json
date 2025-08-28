@@ -8,5 +8,159 @@
     "63251a82-8296-433a-92ed-faf696756545",
     "8ee192cc-ac9d-46fd-8796-c653ded3753f",
     "b39bba96-4062-4223-a917-26f9f347d9e6"
-  ]
 }
+  height: 3px;
+
+
+
+
+
+
+
+
+
+
+                        print(f"\n📃 Page {page_num} content for {centre_name}:")
+                        for line in text.splitlines():
+                            clean_line = line.strip().lower()
+
+                            if "under 2" in clean_line:
+
+
+
+
+
+                                match = re.findall(r"\d+", line)
+                                if match:
+                                    u2_total_hours = int(match[-1])
+                                    data_found = True
+                            elif "over 2" in clean_line:
+                                match = re.findall(r"\d+", line)
+
+
+
+                                if match:
+                                    o2_total_hours += int(match[-1])
+                                    data_found = True
+                            elif "20 hours" in clean_line:
+                                match = re.findall(r"\d+", line)
+                                if match:
+
+
+
+
+
+
+
+
+
+
+                                    o2_total_hours += int(match[-1])
+
+                            elif "plus 10 ece" in clean_line:
+                                match = re.findall(r"\d+", line)
+                                if match:
+                                    o2_total_hours += int(match[-1])
+
+            if not data_found:
+                print(f"❌ No valid totals found in PDF for {centre_name}")
+                results[centre_name] = {"u2": 0, "o2": 0, "total": 0}
+                continue
+
+            # Fallback to current date if we couldn't detect the month from PDF
+            working_date = detected_month or datetime.strptime(current_month, "%Y-%m")
+            
+            # For now, hardcode 22 working days per month
+            working_days = 22
+            
+            u2_cap = config["u2_licence"] * working_days * HOURS_PER_DAY
+            o2_cap = (config["total_licence"] - config["u2_licence"]) * working_days * HOURS_PER_DAY
+            total_cap = config["total_licence"] * working_days * HOURS_PER_DAY
+
+            results[centre_name] = {
+                "u2": round((u2_total_hours / u2_cap) * 100) if u2_cap else 0,
+                "o2": round((o2_total_hours / o2_cap) * 100) if o2_cap else 0,
+                "total": round(((u2_total_hours + o2_total_hours) / total_cap) * 100) if total_cap else 0,
+            }
+
+            print(f"✅ Final for {centre_name}: {results[centre_name]}")
+        
+        except Exception as e:
+            print(f"❌ Error processing PDF for {centre_name}: {str(e)}")
+            results[centre_name] = {"u2": 0, "o2": 0, "total": 0}
+    
+    # Calculate Group Occupancy (average of centres with data)
+    valid_centres = [v for v in results.values() if v["total"] > 0]
+    if valid_centres:
+        avg_u2 = round(sum(v["u2"] for v in valid_centres) / len(valid_centres))
+        avg_o2 = round(sum(v["o2"] for v in valid_centres) / len(valid_centres))
+        avg_total = round(sum(v["total"] for v in valid_centres) / len(valid_centres))
+    else:
+        avg_u2 = avg_o2 = avg_total = 0
+
+    results["Group Occupancy"] = {
+        "u2": avg_u2,
+        "o2": avg_o2,
+        "total": avg_total
+    }
+
+    return results
+
+@app.get("/")
+def read_root():
+    return {"message": "Monthly Occupancy API is running"}
+
+@app.get("/occupancy")
+def get_monthly_occupancy():
+    # Get the current month's data
+    current_month = datetime.now().strftime("%Y-%m")
+    return fetch_occupancy_from_gcs(current_month)
+
+@app.get("/weekly-occupancy")
+def get_weekly_occupancy():
+    return weekly_data
+
+@app.get("/manual-occupancy")
+def get_manual_occupancy():
+    return {}
+
+@app.get("/refresh-status")
+def get_refresh_status():
+    global is_refresh_running
+    return {"running": is_refresh_running}
+
+async def run_refresh_task():
+    """Background task to refresh data from Discover"""
+    global is_refresh_running
+    try:
+        is_refresh_running = True
+        print("🔄 Starting Discover automation...")
+        
+        # This will login to Discover, download PDFs, and upload to GCS
+        await refresh_current_month_reports()
+        
+        print("✅ Refresh completed successfully")
+    except Exception as e:
+        print(f"❌ Error during refresh: {str(e)}")
+    finally:
+        is_refresh_running = False
+
+@app.post("/refresh-occupancy")
+async def refresh_occupancy(background_tasks: BackgroundTasks):
+    """Endpoint to trigger refresh from Discover"""
+    global is_refresh_running
+    
+    if is_refresh_running:
+        return {"status": "already_running", "message": "A refresh operation is already in progress"}
+    
+    # Start the refresh task in the background
+    background_tasks.add_task(run_refresh_task)
+    
+    return {"status": "started", "message": "Refresh started in the background"}
+
+@app.get("/future-occupancy")
+def get_future_occupancy():
+    # This could be expanded to include multiple future months
+    current_month = datetime.now().strftime("%Y-%m")
+    return {current_month: fetch_occupancy_from_gcs(current_month)}
+EOFwx7cXenrKVlKEgqZpFZanp7u4QIJ2IVbGZzLXgNZt0A

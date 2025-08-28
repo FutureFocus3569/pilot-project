@@ -9,8 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("DIRECT_URL")
 }
 
 // User and authentication models
@@ -21,8 +22,8 @@ model User {
   password      String
   role          UserRole  @default(USER)
   isActive      Boolean   @default(true)
-  organizationId String
-  organization  Organization @relation(fields: [organizationId], references: [id])
+  centreId      String
+  centre        Centre @relation(fields: [centreId], references: [id])
   
   // Centre permissions - many-to-many relationship
   centrePermissions UserCentrePermission[]
@@ -68,7 +69,6 @@ model Organization {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
-  users         User[]
   centres       Centre[]
   xeroConfig    XeroConfig?
 
@@ -89,6 +89,8 @@ model Centre {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
+
+  users                 User[]
   occupancyData         OccupancyData[]
   staffHours            StaffHours[]
   userPermissions       UserCentrePermission[]

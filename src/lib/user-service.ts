@@ -9,7 +9,7 @@ const mockUsers = [
     password: '$2b$12$hWOmmQlTAY/oyWhGJVxf3emW35PWuTOXWLEIDHxKVVMxmrux0I0FK', // 1234
     role: 'MASTER' as const,
     isActive: true,
-    organizationId: 'org_1',
+  centreId: 'cmeaw3xn000423lv39op9aau',
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -22,7 +22,7 @@ export interface User {
   password: string;
   role: 'MASTER' | 'ADMIN' | 'USER';
   isActive: boolean;
-  organizationId: string;
+  centreId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,7 +32,7 @@ export interface CreateUserData {
   email: string;
   password: string;
   role: 'MASTER' | 'ADMIN' | 'USER';
-  organizationId: string;
+  centreId: string;
   centreIds?: string[];
 }
 
@@ -41,6 +41,7 @@ export interface UpdateUserData {
   email?: string;
   role?: 'MASTER' | 'ADMIN' | 'USER';
   isActive?: boolean;
+  centreId?: string;
   centreIds?: string[];
 }
 
@@ -84,7 +85,7 @@ class UserService {
             email: true,
             role: true,
             isActive: true,
-            organizationId: true,
+            centreId: true,
             createdAt: true,
             updatedAt: true,
           },
@@ -93,7 +94,7 @@ class UserService {
   return users.map(u => ({
     id: u.id,
     name: u.name ?? '',
-    organizationId: u.organizationId,
+    centreId: u.centreId,
     createdAt: u.createdAt,
     updatedAt: u.updatedAt,
     isActive: u.isActive,
@@ -152,7 +153,7 @@ class UserService {
       password: hashedPassword,
       role: data.role,
       isActive: true,
-      organizationId: data.organizationId,
+      centreId: data.centreId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -166,7 +167,7 @@ class UserService {
             email: data.email,
             password: hashedPassword,
             role: data.role,
-            organizationId: data.organizationId,
+            centreId: data.centreId,
           },
           select: {
             id: true,
@@ -174,7 +175,7 @@ class UserService {
             email: true,
             role: true,
             isActive: true,
-            organizationId: true,
+            centreId: true,
             createdAt: true,
             updatedAt: true,
           },
@@ -201,7 +202,7 @@ class UserService {
   const apiUser: Omit<User, 'password'> = {
     id: user.id,
     name: user.name ?? '',
-    organizationId: user.organizationId,
+    centreId: user.centreId,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     isActive: user.isActive,
@@ -237,22 +238,22 @@ class UserService {
             email: true,
             role: true,
             isActive: true,
-            organizationId: true,
+            centreId: true,
             createdAt: true,
             updatedAt: true,
           },
         });
-  const apiUser: Omit<User, 'password'> = {
-    id: user.id,
-    name: user.name ?? '',
-    organizationId: user.organizationId,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    isActive: user.isActive,
-    email: user.email,
-    role: user.role,
-  };
-  return apiUser;
+      const apiUser: Omit<User, 'password'> = {
+        id: user.id,
+        name: user.name ?? '',
+        centreId: user.centreId,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        isActive: user.isActive,
+        email: user.email,
+        role: user.role,
+      };
+      return apiUser;
       } catch (error) {
         console.log('Database not available, using mock data');
         this.useDatabase = false;
