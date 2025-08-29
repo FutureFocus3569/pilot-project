@@ -16,6 +16,12 @@ jobs:
       - run: npm ci
       - run: npx prisma generate
 
+      - name: Debug DIRECT_URL
+        env:
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: |
+          echo "DIRECT_URL starts with: ${DIRECT_URL:0:40}"
+
       - name: Connectivity check
         env:
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
