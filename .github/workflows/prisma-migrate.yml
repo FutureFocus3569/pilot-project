@@ -1,35 +1,22 @@
-name: Prisma Migrate Deploy
+- name: Debug DIRECT_URL (masked)
+  env:
+    DIRECT_URL: ${{ secrets.DIRECT_URL }}
+  run: |
+    echo "DIRECT_URL: $(echo $DIRECT_URL | sed 's/HotelLimaFox3!/************/g')"
 
-on:
-  workflow_dispatch:
-  push:
-    branches: [ main ]
+- name: Fail if DIRECT_URL is empty
+  env:
+    DIRECT_URL: ${{ secrets.DIRECT_URL }}
+  run: |
+    if [ -z "$DIRECT_URL" ]; then
+      echo "DIRECT_URL is not set!"
+      exit 1
+    fi
 
-jobs:
-  migrate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm ci
-      - run: npx prisma generate
-
-      - name: Debug DIRECT_URL
-        env:
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-        run: |
-          echo "DIRECT_URL starts with: ${DIRECT_URL:0:40}"
-
-      - name: Connectivity check
-        env:
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-        run: |
-          sudo apt-get update && sudo apt-get install -y postgresql-client
-          psql "$DIRECT_URL" -c "select version();"
-
-      - name: Deploy via pooler
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npx prisma migrate deploy
+- name: Connectivity check (explicit params)
+  env:
+    DIRECT_URL: ${{ secrets.DIRECT_URL }}
+  run: |
+    sudo apt-get update && sudo apt-get install -y postgresql-client
+    export PGPASSWORD="HotelLimaFox3!"
+    psql -h db.lhismadtghpgvuuxioen.supabase.co -U postgres -d postgres -p 5432 -c "select version();" "sslmode=require"
