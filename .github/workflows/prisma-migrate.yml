@@ -1,20 +1,29 @@
-name: Prisma Migrate
+name: Prisma Migrate Deploy
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   migrate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
       - run: npm ci
-      - name: Deploy migrations via pooler (IPv4)
+      - run: npx prisma generate
+
+      - name: Connectivity check
+        env:
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          psql "$DIRECT_URL" -c "select version();"
+
+      - name: Deploy via pooler
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma migrate deploy
