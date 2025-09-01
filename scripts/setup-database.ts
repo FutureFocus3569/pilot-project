@@ -89,7 +89,7 @@ async function setupDatabase() {
         email: 'courtney@futurefocus.co.nz',
         password: hashedPassword,
         role: 'MASTER',
-        organizationId: organization.id,
+  centreId: organization.id,
       },
     });
 
@@ -105,7 +105,9 @@ async function setupDatabase() {
         address: '123 Childcare Street, Auckland',
         phone: '+64 9 123 4567',
         capacity: 80,
-        organizationId: organization.id,
+
+  organization: { connect: { id: organization.id } },
+
       },
     });
 
@@ -118,7 +120,9 @@ async function setupDatabase() {
         address: '456 Early Learning Ave, Auckland',
         phone: '+64 9 987 6543',
         capacity: 60,
-        organizationId: organization.id,
+
+  organization: { connect: { id: organization.id } },
+
       },
     });
 
