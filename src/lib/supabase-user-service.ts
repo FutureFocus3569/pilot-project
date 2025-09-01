@@ -8,7 +8,7 @@ export interface CreateUserData {
   email: string;
   password: string;
   role: 'MASTER' | 'ADMIN' | 'USER';
-  organizationId: string;
+  centreId: string;
 }
 
 export interface SimpleUser {
@@ -17,7 +17,7 @@ export interface SimpleUser {
   email: string;
   role: string;
   isActive: boolean;
-  organizationId: string;
+  centreId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,7 +30,7 @@ class SupabaseUserService {
       email: 'courtney@futurefocus.co.nz',
       role: 'MASTER',
       isActive: true,
-      organizationId: 'org_futurefocus',
+  centreId: 'centre_futurefocus',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -40,7 +40,7 @@ class SupabaseUserService {
       email: 'sarah@futurefocus.co.nz',
       role: 'ADMIN',
       isActive: true,
-      organizationId: 'org_futurefocus',
+  centreId: 'centre_futurefocus',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -63,10 +63,10 @@ class SupabaseUserService {
             name: userData.name,
             password: hashedPassword,
             role: userData.role,
-            is_active: true,
-            organization_id: userData.organizationId,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+            isActive: true,
+            centreId: userData.centreId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           }
         ])
         .select()
@@ -81,7 +81,7 @@ class SupabaseUserService {
           email: userData.email,
           role: userData.role,
           isActive: true,
-          organizationId: userData.organizationId,
+          centreId: userData.centreId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -95,10 +95,10 @@ class SupabaseUserService {
         name: data.name,
         email: data.email,
         role: data.role,
-        isActive: data.is_active,
-        organizationId: data.organization_id,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
+        isActive: data.isActive,
+        centreId: data.centreId,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
       };
     } catch (error) {
       console.log('⚠️ Create user error, using mock data:', error);
@@ -109,7 +109,7 @@ class SupabaseUserService {
         email: userData.email,
         role: userData.role,
         isActive: true,
-        organizationId: userData.organizationId,
+        centreId: userData.centreId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -131,23 +131,23 @@ class SupabaseUserService {
 
       if (error) {
         console.log('⚠️ Database fetch failed, using mock data:', error.message);
-        return this.mockUsers.filter(u => u.organizationId === organizationId);
+  return this.mockUsers.filter(u => u.centreId === centreId);
       }
 
       console.log('✅ Users fetched from database:', data.length);
   return data.map((user: any) => ({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isActive: user.is_active,
-        organizationId: user.organization_id,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
-      }));
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    isActive: user.isActive,
+    centreId: user.centreId,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  }));
     } catch (error) {
       console.log('⚠️ Get users error, using mock data:', error);
-      return this.mockUsers.filter(u => u.organizationId === organizationId);
+  return this.mockUsers.filter(u => u.centreId === centreId);
     }
   }
 

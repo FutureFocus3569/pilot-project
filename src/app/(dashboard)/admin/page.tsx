@@ -1,7 +1,9 @@
+
 "use client";
 import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import { useAuth } from "@/contexts/auth-context";
 
+export default function AdminPage() {
   const { user } = useAuth();
   type StaffUser = {
     id: string;
