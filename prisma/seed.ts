@@ -68,8 +68,8 @@ async function main() {
       where: { code: centreData.code },
       update: centreData,
       create: {
-        ...centreData,
-        organizationId: organization.id,
+  ...centreData,
+  organization: { connect: { id: organization.id } },
       },
     });
     console.log(`Created/updated centre: ${centre.name} (${centre.code})`);
@@ -84,7 +84,7 @@ async function main() {
       name: 'Master Administrator',
       password: 'hashed_password_here', // In real app, this should be properly hashed
       role: 'MASTER',
-      organizationId: organization.id,
+  centreId: organization.id,
     },
   });
 
