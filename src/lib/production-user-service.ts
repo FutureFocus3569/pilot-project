@@ -164,7 +164,7 @@ class ProductionUserService {
             email: userData.email,
             password: hashedPassword,
             role: userData.role,
-            centreId: userData.centreId,
+            centreId: userData.centreId ?? '',
           },
           select: {
             id: true,
@@ -199,7 +199,7 @@ class ProductionUserService {
                 const existingPermission = await tx.userCentrePermission.findFirst({
                   where: {
                     userId: user.id,
-                    centreId: centreId,
+                    centreId: centreId ?? '',
                   }
                 });
 
@@ -207,7 +207,7 @@ class ProductionUserService {
                   await tx.userCentrePermission.create({
                     data: {
                       userId: user.id,
-                      centreId: centreId,
+                      centreId: centreId ?? '',
                       ...permissions,
                     }
                   });
@@ -309,7 +309,7 @@ class ProductionUserService {
                 await tx.userCentrePermission.create({
                   data: {
                     userId: user.id,
-                    centreId: centreId,
+                    centreId: centreId ?? '',
                     ...permissions,
                   }
                 });
