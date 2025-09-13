@@ -111,6 +111,7 @@ class ProductionUserService {
       return users.map(user => ({
         ...user,
         name: user.name || '',
+        centreId: user.centreId ?? '',
         centrePermissions: user.centrePermissions.map(cp => ({
           centreId: cp.centreId ?? '',
           centreName: cp.centre.name,
