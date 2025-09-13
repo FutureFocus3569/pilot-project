@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { RefreshCw } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 
 interface InvoiceData {
   overdueAmount: number;
@@ -35,6 +36,7 @@ function InvoiceCard({ centre }: InvoiceCardProps) {
 }
 
 export function OverdueInvoices() {
+  const { user } = useAuth();
   const [centres, setCentres] = useState<Centre[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,64 +49,21 @@ export function OverdueInvoices() {
     try {
       setLoading(true);
       setError(null);
-      
-      // For now, using mock data based on the image
-      // Later we can replace this with real API calls to accounting system
-      const mockData: Centre[] = [
-        {
-          id: "centre_001",
-          name: "Papamoa Beach",
-          invoiceData: {
-            overdueAmount: 0.00,
-            status: "OVERDUE"
-          }
-        },
-        {
-          id: "centre_002", 
-          name: "The Boulevard",
-          invoiceData: {
-            overdueAmount: 0.00,
-            status: "OVERDUE"
-          }
-        },
-        {
-          id: "centre_003",
-          name: "The Bach",
-          invoiceData: {
-            overdueAmount: 0.00,
-            status: "OVERDUE"
-          }
-        },
-        {
-          id: "centre_004",
-          name: "Terrace Views",
-          invoiceData: {
-            overdueAmount: 0.00,
-            status: "OVERDUE"
-          }
-        },
-        {
-          id: "centre_005",
-          name: "Livingstone Drive",
-          invoiceData: {
-            overdueAmount: 0.00,
-            status: "OVERDUE"
-          }
-        },
-        {
-          id: "centre_006",
-          name: "West Dune",
-          invoiceData: {
-            overdueAmount: 0.00,
-            status: "OVERDUE"
-          }
+      const res = await fetch("/api/centres");
+      if (!res.ok) throw new Error("Failed to fetch centres");
+      const apiCentres = await res.json();
+      // Map API data to Centre[] shape expected by UI
+      const mapped: Centre[] = apiCentres.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        invoiceData: {
+          overdueAmount: c.overdueInvoicesAmount !== undefined && c.overdueInvoicesAmount !== null
+            ? Number(c.overdueInvoicesAmount)
+            : 0,
+          status: "OVERDUE"
         }
-      ];
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      setCentres(mockData);
+      }));
+      setCentres(mapped);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load invoice data');
@@ -113,6 +72,12 @@ export function OverdueInvoices() {
       setLoading(false);
     }
   };
+
+  // Filter to only allowed centres for Xero
+  const allowedCentres = user?.xeroCentres || [];
+  const filteredCentres = allowedCentres.length > 0
+    ? centres.filter(c => allowedCentres.includes(c.name))
+    : centres;
 
   if (loading) {
     return (
@@ -210,7 +175,7 @@ export function OverdueInvoices() {
       <div className="p-6">
         {/* Centres grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-          {centres.map((centre) => (
+          {filteredCentres.map((centre) => (
             <InvoiceCard key={centre.id} centre={centre} />
           ))}
         </div>

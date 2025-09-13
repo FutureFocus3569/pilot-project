@@ -7,7 +7,7 @@ export interface AuthUser {
   userId: string;
   email: string;
   role: 'MASTER' | 'ADMIN' | 'USER';
-  organizationId: string;
+  centreId: string;
 }
 
 export function verifyToken(token: string): AuthUser | null {
@@ -17,7 +17,7 @@ export function verifyToken(token: string): AuthUser | null {
       userId: decoded.userId,
       email: decoded.email,
       role: decoded.role,
-      organizationId: decoded.organizationId,
+  centreId: decoded.centreId,
     };
   } catch (error) {
     return null;

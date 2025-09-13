@@ -9,7 +9,7 @@ export interface CreateUserData {
   email: string;
   password: string;
   role: 'MASTER' | 'ADMIN' | 'USER';
-  organizationId: string;
+  centreId: string;
   centreIds?: string[];
   pagePermissions: {
     page: DashboardPage;
@@ -24,7 +24,7 @@ export interface UserWithPermissions {
   email: string;
   role: string;
   isActive: boolean;
-  organizationId: string;
+  centreId: string;
   createdAt: Date;
   updatedAt: Date;
   centrePermissions: {
@@ -65,7 +65,7 @@ class ProductionUserService {
     }
   }
 
-  async getAllUsers(organizationId: string): Promise<UserWithPermissions[]> {
+  async getAllUsers(centreId: string): Promise<UserWithPermissions[]> {
     if (!this.databaseConnected) {
       await this.testDatabaseConnection();
     }
@@ -77,7 +77,7 @@ class ProductionUserService {
     try {
       const users = await prisma.user.findMany({
         where: {
-          organizationId,
+          centreId,
         },
         select: {
           id: true,
@@ -85,7 +85,7 @@ class ProductionUserService {
           email: true,
           role: true,
           isActive: true,
-          organizationId: true,
+          centreId: true,
           createdAt: true,
           updatedAt: true,
           centrePermissions: {
@@ -164,7 +164,7 @@ class ProductionUserService {
             email: userData.email,
             password: hashedPassword,
             role: userData.role,
-            organizationId: userData.organizationId,
+            centreId: userData.centreId,
           },
           select: {
             id: true,
@@ -172,7 +172,7 @@ class ProductionUserService {
             email: true,
             role: true,
             isActive: true,
-            organizationId: true,
+            centreId: true,
             createdAt: true,
             updatedAt: true,
           }
@@ -329,7 +329,7 @@ class ProductionUserService {
   }
 
   async getUserById(userId: string): Promise<UserWithPermissions> {
-    const users = await this.getAllUsers('org_futurefocus'); // Default org
+  const users = await this.getAllUsers('centre_futurefocus'); // Default centre
     const user = users.find(u => u.id === userId);
     if (!user) {
       throw new Error('User not found');

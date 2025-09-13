@@ -43,6 +43,7 @@ export default function UserManagementPage() {
     name: '',
     email: '',
     password: '',
+    location: '',
     role: 'USER' as 'MASTER' | 'ADMIN' | 'USER',
     permissions: {
       dashboard: true,
@@ -54,7 +55,9 @@ export default function UserManagementPage() {
       assistant: false,
       userManagement: false,
     } as UserPermissions,
-    centreIds: [] as string[]
+  dashboardCentres: [] as string[],
+  quickAccessCentres: [] as string[],
+  xeroCentres: [] as string[]
   });
 
   // Mock current user - replace with actual auth
@@ -137,7 +140,9 @@ export default function UserManagementPage() {
           email: newUser.email,
           password: newUser.password,
           role: newUser.role,
-          centreIds: newUser.centreIds || []
+          dashboardCentres: newUser.dashboardCentres || [],
+          quickAccessCentres: newUser.quickAccessCentres || [],
+          xeroCentres: newUser.xeroCentres || [],
         }),
       });
 
@@ -153,6 +158,7 @@ export default function UserManagementPage() {
           name: '',
           email: '',
           password: '',
+          location: '',
           role: 'USER',
           permissions: {
             dashboard: true,
@@ -164,7 +170,9 @@ export default function UserManagementPage() {
             assistant: false,
             userManagement: false,
           },
-          centreIds: []
+          dashboardCentres: [],
+          quickAccessCentres: [],
+          xeroCentres: []
         });
         
         setShowAddForm(false);
@@ -537,6 +545,26 @@ export default function UserManagementPage() {
                       />
                     </div>
 
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
+                      <select
+                        required
+                        value={newUser.location}
+                        onChange={e => setNewUser({ ...newUser, location: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 font-medium"
+                      >
+                        <option value="">Select location</option>
+                        <option value="Papamoa Beach">Papamoa Beach</option>
+                        <option value="The Boulevard">The Boulevard</option>
+                        <option value="The Bach">The Bach</option>
+                        <option value="Terrace Views">Terrace Views</option>
+                        <option value="Livingstone Drive">Livingstone Drive</option>
+                        <option value="West Dune">West Dune</option>
+                        <option value="Head Office">Head Office</option>
+                      </select>
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
                       <input
@@ -566,28 +594,86 @@ export default function UserManagementPage() {
                   {/* Permissions */}
                   <div className="space-y-4">
                     <h4 className="font-semibold text-gray-800 border-b pb-2">🔐 Permissions</h4>
-                    <div className="space-y-3 max-h-64 overflow-y-auto">
-                      {Object.entries(newUser.permissions).map(([permission, enabled]) => (
-                        <label key={permission} className="flex items-center p-2 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={enabled}
-                            onChange={(e) => setNewUser({
-                              ...newUser,
-                              permissions: { ...newUser.permissions, [permission]: e.target.checked }
-                            })}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3"
-                          />
-                          <div>
-                            <div className="font-medium text-sm capitalize">
-                              {permission.replace(/([A-Z])/g, ' $1').trim()}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              Access to {permission.replace(/([A-Z])/g, ' $1').toLowerCase()} section
-                            </div>
+                    <div className="space-y-3 max-h-64 overflow-y-scroll scrollbar scrollbar-thumb-blue-500 scrollbar-track-blue-200 relative">
+                      <div className="absolute -top-6 left-0 w-full text-xs text-blue-700 text-center font-semibold pointer-events-none select-none">Scroll for more permissions ↓</div>
+                      {Object.entries(newUser.permissions).map(([permission, enabled]) => {
+                        const showCentres = ['dashboard', 'quickAccess', 'xero'].includes(permission);
+                        let centreOptions = ["Papamoa Beach", "The Boulevard", "The Bach", "Terrace Views", "Livingstone Drive", "West Dune"];
+                        if (permission === 'quickAccess') {
+                          centreOptions = [
+                            "Papamoa Beach",
+                            "The Boulevard",
+                            "The Bach",
+                            "Terrace Views",
+                            "Livingstone Drive",
+                            "West Dune",
+                            "Head Office"
+                          ];
+                        }
+                        return (
+                          <div key={permission} className="border rounded-lg p-2 mb-2 bg-white hover:bg-gray-50">
+                            <label className="flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={enabled}
+                                onChange={(e) => setNewUser({
+                                  ...newUser,
+                                  permissions: { ...newUser.permissions, [permission]: e.target.checked }
+                                })}
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3"
+                              />
+                              <div>
+                                <div className="font-medium text-sm capitalize">
+                                  {permission.replace(/([A-Z])/g, ' $1').trim()}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  Access to {permission.replace(/([A-Z])/g, ' $1').toLowerCase()} section
+                                </div>
+                              </div>
+                            </label>
+                            {showCentres && enabled && (
+                              <div className="mt-2 ml-7">
+                                <div className="text-xs font-semibold text-gray-700 mb-1">Select Centres:</div>
+                                <div className="flex flex-wrap gap-2">
+                                  {centreOptions.map(centre => {
+                                    let centreArr: string[] = [];
+                                    let setArr: (arr: string[]) => void = () => {};
+                                    if (permission === 'dashboard') {
+                                      centreArr = newUser.dashboardCentres;
+                                      setArr = (arr) => setNewUser({ ...newUser, dashboardCentres: arr });
+                                    }
+                                    if (permission === 'quickAccess') {
+                                      centreArr = newUser.quickAccessCentres;
+                                      setArr = (arr) => setNewUser({ ...newUser, quickAccessCentres: arr });
+                                    }
+                                    if (permission === 'xero') {
+                                      centreArr = newUser.xeroCentres;
+                                      setArr = (arr) => setNewUser({ ...newUser, xeroCentres: arr });
+                                    }
+                                    return (
+                                      <label key={centre} className="flex items-center gap-1 text-xs bg-blue-50 px-2 py-1 rounded border border-blue-200 cursor-pointer">
+                                        <input
+                                          type="checkbox"
+                                          checked={centreArr.includes(centre)}
+                                          onChange={() => {
+                                            if (centreArr.includes(centre)) {
+                                              setArr(centreArr.filter(c => c !== centre));
+                                            } else {
+                                              setArr([...centreArr, centre]);
+                                            }
+                                          }}
+                                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                        />
+                                        {centre}
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        </label>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

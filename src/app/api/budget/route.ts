@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
   // Get centres user has access to
-  const accessibleCentres = user.centrePermissions.map((cp: { centre: Centre }) => cp.centre);
+  const accessibleCentres = user.centrePermissions.map((cp) => cp.centre);
 
     // If specific centre requested, check access
     if (centreId) {
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get centres user has access to
-  const centreIds = centreId ? [centreId] : accessibleCentres.map((c: Centre) => c.id);
+  const centreIds = centreId ? [centreId] : accessibleCentres.map((c) => c.id);
     
     const budgetData = await prisma.centreBudgetCategory.findMany({
       where: {
@@ -69,77 +69,48 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Format the data for the frontend
-  type Expense = { month: number; actualAmount: number };
-    type Category = { name: string };
-    type Centre = { id: string };
-    type BudgetItem = {
-      centreId: string;
-      centre: Centre;
-      category: Category;
-      monthlyBudget: number;
-      expenses: Expense[];
-    };
-    interface FormattedCategory {
-      category: string;
-      monthlyBudget: number;
-      actualSpend: number;
-      variance: number;
-      monthlyData: { [key: string]: number };
-    }
-    interface FormattedData {
-      [centreKey: string]: {
-        centre: Centre;
-        categories: FormattedCategory[];
-      };
-    }
-    // Convert Prisma Decimal fields to number for compatibility
-    const formattedData = budgetData.reduce<FormattedData>((acc, item: Record<string, unknown>) => {
-      const centreKey = item.centreId as string;
-      // Convert Decimal to number for monthlyBudget and actualAmount
-      const monthlyBudget = typeof item.monthlyBudget === 'object' && item.monthlyBudget !== null && typeof (item.monthlyBudget as { toNumber?: () => number }).toNumber === 'function'
-        ? (item.monthlyBudget as { toNumber: () => number }).toNumber()
-        : Number(item.monthlyBudget);
-      const expenses: Expense[] = Array.isArray(item.expenses)
-        ? (item.expenses as Array<Record<string, unknown>>).map((e) => ({
-            month: Number(e.month),
-            actualAmount: typeof e.actualAmount === 'object' && e.actualAmount !== null && typeof (e.actualAmount as { toNumber?: () => number }).toNumber === 'function'
-              ? (e.actualAmount as { toNumber: () => number }).toNumber()
-              : Number(e.actualAmount)
-          }))
-        : [];
-      if (!acc[centreKey]) {
-        acc[centreKey] = {
-          centre: item.centre as Centre,
-          categories: []
+
+    // --- Refactored transformation for robust budget vs actuals matching ---
+    // Output: { [centreName]: { [categoryName]: { [Month Year]: { budget, actual, variance } } } }
+    const monthNames = [
+      'Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025',
+      'May 2025', 'Jun 2025', 'Jul 2025', 'Aug 2025'
+    ];
+
+    const result: Record<string, Record<string, Record<string, { budget: number, actual: number, variance: number }>>> = {};
+
+    for (const item of budgetData) {
+      const centreName = item.centre?.name || item.centreId;
+      const categoryName = item.category?.name || item.categoryId;
+      // Convert Decimal to number for monthlyBudget
+      const monthlyBudget = typeof item.monthlyBudget === 'object' && item.monthlyBudget !== null && typeof item.monthlyBudget.toNumber === 'function'
+        ? item.monthlyBudget.toNumber() : Number(item.monthlyBudget);
+      // Build a map of month -> actual
+      const actualsByMonth: Record<number, number> = {};
+      if (Array.isArray(item.expenses)) {
+        for (const exp of item.expenses) {
+          const monthNum = Number(exp.month);
+          const actualAmount = typeof exp.actualAmount === 'object' && exp.actualAmount !== null && typeof exp.actualAmount.toNumber === 'function'
+            ? exp.actualAmount.toNumber() : Number(exp.actualAmount);
+          actualsByMonth[monthNum] = actualAmount;
+        }
+      }
+      for (let i = 0; i < monthNames.length; ++i) {
+        const monthNum = i + 1;
+        const actual = actualsByMonth[monthNum] || 0;
+        if (actual === 0) continue; // Ignore months where actual = 0
+        if (!result[centreName]) result[centreName] = {};
+        if (!result[centreName][categoryName]) result[centreName][categoryName] = {};
+        result[centreName][categoryName][monthNames[i]] = {
+          budget: monthlyBudget,
+          actual,
+          variance: monthlyBudget - actual
         };
       }
-
-      // Calculate monthly data
-      const monthlyData: { [key: string]: number } = {};
-      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG'];
-      months.forEach((month, index) => {
-        const monthData = expenses.find((e) => e.month === index + 1);
-        monthlyData[month] = monthData ? Number(monthData.actualAmount) : 0;
-      });
-
-      const totalActual = expenses.reduce((sum: number, expense) => sum + Number(expense.actualAmount), 0);
-      const variance = monthlyBudget - totalActual;
-
-      acc[centreKey].categories.push({
-        category: (item.category as Category).name,
-        monthlyBudget,
-        actualSpend: totalActual,
-        variance,
-        monthlyData
-      });
-
-      return acc;
-    }, {});
+    }
 
     return NextResponse.json({
-      centres: accessibleCentres,
-      budgetData: formattedData
+      data: result
     });
 
   } catch (error) {

@@ -61,7 +61,7 @@ export default function UserManagementPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/admin/users?organizationId=cm1f9zr5g0001xjr5l5h8fvzm');
+  const response = await fetch('/api/admin/users?centreId=cm1f9zr5g0001xjr5l5h8fvzm');
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -131,7 +131,7 @@ export default function UserManagementPage() {
         },
         body: JSON.stringify({
           ...newUser,
-          organizationId: 'cm1f9zr5g0001xjr5l5h8fvzm'
+          centreId: 'cm1f9zr5g0001xjr5l5h8fvzm'
         }),
       });
 

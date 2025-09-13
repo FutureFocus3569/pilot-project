@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       name: isMasterRole(user.role) ? 'Master User' : 
             isAdminRole(user.role) ? 'Admin User' : 'Regular User',
       isActive: true,
-      organizationId: user.organizationId,
+  centreId: user.centreId,
       centrePermissions: isMasterRole(user.role) ? [] : [
         {
           centreId: 'centre_1',

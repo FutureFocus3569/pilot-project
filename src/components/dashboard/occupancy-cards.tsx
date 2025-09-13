@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Users, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 
 interface Centre {
   id: string;
@@ -77,6 +78,7 @@ function DonutChart({ value, total, size = 80, strokeWidth = 8, color, label }: 
 }
 
 export function OccupancyCards() {
+  const { user } = useAuth();
   const [centres, setCentres] = useState<Centre[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -253,6 +255,12 @@ export function OccupancyCards() {
     );
   }
 
+  // Filter to only allowed centres
+  const allowedCentres = user?.dashboardCentres || [];
+  const filteredCentres = allowedCentres.length > 0
+    ? centres.filter(c => allowedCentres.includes(c.name))
+    : centres;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -294,7 +302,7 @@ export function OccupancyCards() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {centres.map((centre) => {
+        {filteredCentres.map((centre) => {
         const currentOccupancy = getOccupancyForMonth(centre);
           return (
             <div key={centre.id} className="group bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:border-blue-200/50">

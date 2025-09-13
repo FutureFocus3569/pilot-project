@@ -2,11 +2,13 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { getSupabaseServer } from '../../../../lib/supabase';
+
 // You should set these in your .env.local file for security
 const XERO_CLIENT_ID = process.env.XERO_CLIENT_ID!;
 const XERO_CLIENT_SECRET = process.env.XERO_CLIENT_SECRET!;
 const XERO_REDIRECT_URI = process.env.XERO_REDIRECT_URI!;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export async function GET(req: NextRequest) {
   console.log('Xero callback route hit');
@@ -44,44 +46,41 @@ export async function GET(req: NextRequest) {
   }
   // Store tokens in Supabase xero_connections table
   try {
-  const supabase = getSupabaseServer();
-  if (!supabase) throw new Error('Supabase not configured');
+    // Use service role key for secure server-side access
+    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // You may want to identify the correct row by tenant_id or company_name
-    // For now, we assume tenant_id is available in tokenData or state
-    let tenant_id = tokenData.tenant_id;
-    if (!tenant_id && state) {
-      // Optionally, parse tenant_id from state if you encoded it there
-      try {
-        const stateObj = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
-        tenant_id = stateObj.tenant_id;
-      } catch {}
-    }
-    if (!tenant_id) {
-      // Fallback: fetch connections and update the first one (not recommended for prod)
-      const { data: connections, error: fetchError } = await supabase
-        .from('xero_connections')
-        .select('*')
-        .limit(1);
-      if (connections && connections.length > 0) {
-        tenant_id = connections[0].tenant_id;
+    // Step 1: Fetch tenant_id from Xero connections API
+    if (tokenData.access_token) {
+      const connectionsRes = await fetch('https://api.xero.com/connections', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${tokenData.access_token}`,
+          'Accept': 'application/json',
+        },
+      });
+      const connections = await connectionsRes.json();
+      console.log('[XERO CALLBACK] Xero connections:', JSON.stringify(connections, null, 2));
+      if (Array.isArray(connections) && connections.length > 0) {
+        // Upsert all tenants
+        const upserts = connections.map((conn: any) => ({
+          tenant_id: conn.tenantId,
+          tenant_name: conn.tenantName,
+          access_token: tokenData.access_token,
+          refresh_token: tokenData.refresh_token,
+          expires_at: new Date(Date.now() + (tokenData.expires_in || 0) * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
+        }));
+        const { error: upsertError } = await supabaseAdmin
+          .from('xero_connections')
+          .upsert(upserts, { onConflict: 'tenant_id' });
+        if (upsertError) {
+          throw upsertError;
+        }
+        console.log(`[XERO CALLBACK] Tokens upserted in Supabase for all tenants.`);
+      } else {
+        throw new Error('No tenants found from Xero connections API.');
       }
     }
-    if (!tenant_id) {
-      throw new Error('No tenant_id found to update tokens in Supabase.');
-    }
-    const { error: updateError } = await supabase
-      .from('xero_connections')
-      .update({
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('tenant_id', tenant_id);
-    if (updateError) {
-      throw updateError;
-    }
-    console.log(`[XERO CALLBACK] Tokens updated in Supabase for tenant_id: ${tenant_id}`);
   } catch (err) {
     console.error('[XERO CALLBACK] Failed to update tokens in Supabase:', err);
   }

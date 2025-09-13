@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { RefreshCw } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 
 interface EnrollmentData {
   current: number;
@@ -77,6 +78,7 @@ function EnrollmentCard({ centre }: EnrollmentCardProps) {
 }
 
 export function EnrollmentStatus() {
+  const { user } = useAuth();
   const [centres, setCentres] = useState<Centre[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -164,6 +166,12 @@ export function EnrollmentStatus() {
     }
   };
 
+  // Filter to only allowed centres
+  const allowedCentres = user?.dashboardCentres || [];
+  const filteredCentres = allowedCentres.length > 0
+    ? centres.filter(c => allowedCentres.includes(c.name))
+    : centres;
+
   if (loading) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-lg">
@@ -216,7 +224,7 @@ export function EnrollmentStatus() {
 
       {/* Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {centres.map((centre) => (
+        {filteredCentres.map((centre) => (
           <EnrollmentCard key={centre.id} centre={centre} />
         ))}
       </div>

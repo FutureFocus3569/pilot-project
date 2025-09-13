@@ -5,7 +5,30 @@ on:
     - cron: '0 11,23 * * *'  # Runs at 11am and 11pm UTC every day
   workflow_dispatch:         # Allows manual run
 
+name: Scrape Overdue Invoices
+
+on:
+  schedule:
+    # 11am and 11pm NZT (UTC+12/13)
+    - cron: '0 22,11 * * 1-5'
+
 jobs:
+  scrape-overdue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Run Playwright script
+        run: node scripts/playwright-scrape-overdue.js
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DISCOVER_USERNAME: ${{ secrets.DISCOVER_USERNAME }}
+          DISCOVER_PASSWORD: ${{ secrets.DISCOVER_PASSWORD }}
   scrape:
     runs-on: ubuntu-latest
 

@@ -53,25 +53,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create user
-    const user = await userService.createUser({
+    // Create user using Supabase
+    // Use centreId from request if provided, else fallback to 'centre_1'
+    const { supabaseUserService } = await import('@/lib/supabase-user-service');
+    const user = await supabaseUserService.createUser({
       name,
       email,
       password,
       role,
-      organizationId: 'org_1', // Default organization for now
-      centreIds,
+      centreId: centreIds && centreIds.length > 0 ? centreIds[0] : 'centre_1',
     });
 
     return NextResponse.json({
-      message: 'User created successfully',
+      message: 'User created successfully (via Supabase)',
       user,
     });
 
   } catch (error) {
     console.error('Error creating user:', error);
+    // Return the actual error message for debugging
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error?.message || error?.toString() || 'Internal server error' },
       { status: 500 }
     );
   }

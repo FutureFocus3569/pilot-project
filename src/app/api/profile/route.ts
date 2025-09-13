@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       bio: 'Operations Manager overseeing childcare centres across Tauranga and Mount Maunganui. Passionate about early childhood education and creating safe, nurturing environments for children to learn and grow.',
       role: 'MASTER',
       isActive: true,
-      organizationId: 'org_1',
+  centreId: 'centre_1',
       createdAt: new Date(),
       updatedAt: new Date()
     } : {
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       bio: 'Dedicated childcare professional committed to providing quality care and education for children.',
       role: 'USER',
       isActive: true,
-      organizationId: 'org_1',
+  centreId: 'centre_1',
       createdAt: new Date(),
       updatedAt: new Date()
     };

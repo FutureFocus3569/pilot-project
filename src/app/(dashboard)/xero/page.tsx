@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+
+// Helper to map Xero month (YYYY-MM) to UI month key (JAN, FEB, ...)
+const monthNumToKey = (num: number) => [
+  'JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][num-1];
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -90,13 +94,26 @@ export default function XeroPage() {
   const { user } = useAuth();
   const [expandedCentres, setExpandedCentres] = useState<Set<string>>(new Set());
   const [centres, setCentres] = useState<Centre[]>([]);
-  const [budgetData, setBudgetData] = useState<{ [centreId: string]: BudgetData[] }>(sampleBudgetData);
+  const [budgetData, setBudgetData] = useState<{ [centreId: string]: BudgetData[] }>({});
   const [selectedYear] = useState(2025);
   const [isXeroConnected, setIsXeroConnected] = useState(false);
   const [xeroConnectionStatus, setXeroConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  
+    // Fetch P&L data for all companies for a given month/year/category
+    async function getPnLData({ month, year, trackingCategoryId }: { month: number, year: number, trackingCategoryId?: string }) {
+      // Always request the full year for multi-month reporting
+      const accessToken = typeof window !== 'undefined' ? localStorage.getItem('xero_access_token') : undefined;
+      const res = await fetch('/api/xero/pnl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year, trackingCategoryId, accessToken }),
+      });
+      if (!res.ok) throw new Error('Failed to fetch P&L data');
+      return res.json();
+    }
 
-  // Load budget data from localStorage
+  // On mount, check for Xero connection and update state
   useEffect(() => {
     // Check for access_token in URL (after Xero OAuth)
     const url = new URL(window.location.href);
@@ -111,71 +128,56 @@ export default function XeroPage() {
       // Remove token from URL for cleanliness
       url.searchParams.delete('access_token');
       window.history.replaceState({}, document.title, url.pathname);
+    } else {
+      // If no token in URL, check localStorage for connection status
+      const connected = localStorage.getItem('xero_connected') === 'true';
+      const token = localStorage.getItem('xero_access_token');
+      if (connected && token) {
+        setIsXeroConnected(true);
+        setXeroConnectionStatus('connected');
+        const lastSync = localStorage.getItem('xero_last_sync');
+        if (lastSync) setLastSyncTime(new Date(lastSync));
+      } else {
+        setIsXeroConnected(false);
+        setXeroConnectionStatus('disconnected');
+      }
     }
-    loadBudgetData();
-    checkXeroConnection();
+  fetchBudgetData();
   }, []);
 
-  const checkXeroConnection = () => {
-    const connected = localStorage.getItem('xero_connected') === 'true';
-    const lastSync = localStorage.getItem('xero_last_sync');
-    
-    if (connected) {
-      setIsXeroConnected(true);
-      setXeroConnectionStatus('connected');
-      if (lastSync) {
-        setLastSyncTime(new Date(lastSync));
-      }
-    }
-  };
-  
-  const loadBudgetData = () => {
+  // Fetch and map budget data from API
+  useEffect(() => {
+    if (!isXeroConnected) return;
+    fetchBudgetData();
+  }, [isXeroConnected]);
+
+  async function fetchBudgetData() {
     try {
-      // Load saved budgets from localStorage
-      const budgetKey = `budgets_${selectedYear}`;
-      const storedBudgets = localStorage.getItem(budgetKey);
-      if (storedBudgets) {
-        const budgets: CentreBudget[] = JSON.parse(storedBudgets);
-        // Build unique centres from budgets
-        const uniqueCentres: { [id: string]: Centre } = {};
-        budgets.forEach(b => {
-          if (b.centre && b.centre.id) {
-            uniqueCentres[b.centre.id] = b.centre;
-          }
-        });
-        setCentres(Object.values(uniqueCentres));
-        // Only set up empty budgetData structure; do not generate random/mock data
-        const convertedData: { [centreId: string]: BudgetData[] } = {};
-        Object.keys(uniqueCentres).forEach(centreId => {
-          const centreBudgets = budgets.filter(b => b.centreId === centreId);
-          convertedData[centreId] = centreBudgets.map(budget => ({
-            category: budget.category.name,
-            monthlyBudget: budget.monthlyBudget,
-            actualSpend: 0,
-            variance: 0,
-            monthlyData: {
-              JAN: 0, FEB: 0, MAR: 0, APR: 0, MAY: 0, JUN: 0, JUL: 0, AUG: 0, SEP: 0, OCT: 0, NOV: 0, DEC: 0
-            }
-          }));
-        });
-        setBudgetData(convertedData);
-        // Expand all centres by default if not already set
-        if (Object.keys(uniqueCentres).length > 0 && expandedCentres.size === 0) {
-          setExpandedCentres(new Set(Object.keys(uniqueCentres)));
-        }
-      } else {
-        setBudgetData(sampleBudgetData);
-        setCentres([
-          { id: '1', name: 'Papamoa Beach', code: 'PB1' },
-          { id: '2', name: 'The Boulevard', code: 'TB1' },
-          { id: '3', name: 'Livingstone Drive', code: 'LIV' },
-        ]);
-      }
-    } catch (error) {
-      console.error('Error loading budget data:', error);
-      setBudgetData(sampleBudgetData);
+      const res = await fetch(`/api/budget?year=${selectedYear}`);
+      if (!res.ok) throw new Error('Failed to fetch budget data');
+      const data = await res.json();
+      // data.budgetData is { [centreId]: { centre, categories: [...] } }
+      const centresArr = data.centres || [];
+      setCentres(centresArr);
+      // Convert API format to { [centreId]: BudgetData[] }
+      const newBudgetData: { [centreId: string]: BudgetData[] } = {};
+      Object.entries(data.budgetData || {}).forEach(([centreId, val]: any) => {
+        newBudgetData[centreId] = (val.categories || []).map((cat: any) => ({
+          category: cat.category,
+          monthlyBudget: cat.monthlyBudget,
+          actualSpend: cat.actualSpend,
+          variance: cat.variance,
+          monthlyData: cat.monthlyData,
+        }));
+      });
+      setBudgetData(newBudgetData);
+    } catch (err) {
+      console.error('Error fetching budget data:', err);
     }
-  };
+  }
+  // Removed checkXeroConnection; useEffect now handles all connection state logic
+  
+  // ...existing code...
 
   // Helper function to generate realistic actual spend data
   const generateActualSpend = (monthlyBudget: number): number => {
@@ -188,19 +190,16 @@ export default function XeroPage() {
   const generateMonthlyData = (monthlyBudget: number): { [month: string]: number } => {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG'];
     const monthlyData: { [month: string]: number } = {};
-    
     // Generate data for first 8 months, 0 for remaining
     months.forEach(month => {
       // Add some variance to monthly spending (80-120% of average)
       const variance = 0.8 + Math.random() * 0.4;
       monthlyData[month] = Math.round(monthlyBudget * variance);
     });
-    
     // Future months show 0
     ['SEP', 'OCT', 'NOV', 'DEC'].forEach(month => {
       monthlyData[month] = 0;
     });
-    
     return monthlyData;
   };
 
@@ -244,91 +243,87 @@ export default function XeroPage() {
     console.log('Disconnected from Xero');
     
     // Reload with sample data
-    loadBudgetData();
+  // ...existing code...
   };
 
   // Fetch actuals for all centres from backend API and update UI
   const fetchXeroData = async () => {
     if (!isXeroConnected) return;
     try {
-      const accessToken = localStorage.getItem('xero_access_token');
-      if (!accessToken) throw new Error('No Xero access token found');
-      const year = selectedYear;
-      const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-      const updatedBudgetData = { ...budgetData };
-      for (const centre of centres) {
-        const tenantId = CENTRE_TENANT_MAP[centre.id];
-        if (!tenantId) continue;
-        // Build category->accountCode mapping for this centre from budgets
-        const centreBudgets = (budgetData[centre.id] || []);
-        // Find the original budget objects to get xeroAccountCode
-        const budgetKey = `budgets_${year}`;
-        const storedBudgets = localStorage.getItem(budgetKey);
-  const categoryAccountCodes: Record<string, string> = {};
-        if (storedBudgets) {
-          const allBudgets = JSON.parse(storedBudgets);
-          for (const b of allBudgets) {
-            if (b.centreId === centre.id && b.xeroAccountCode && b.category && b.category.name) {
-              categoryAccountCodes[b.category.name] = b.xeroAccountCode;
-            }
+      // Example: fetch P&L for August 2025 for all companies
+      const pnlResults = await getPnLData({ month: 8, year: 2025 });
+      // Log the full P&L API response for each company for debugging
+      console.log('Full Xero P&L API results:', pnlResults);
+      // Helper to recursively flatten all rows
+      function flattenRows(rows: any[]): any[] {
+        let flat: any[] = [];
+        for (const row of rows) {
+          if (row.Rows) {
+            flat = flat.concat(flattenRows(row.Rows));
+          } else {
+            flat.push(row);
           }
         }
-        // Only fetch if at least one category has an account code
-        if (Object.keys(categoryAccountCodes).length === 0) continue;
-        const res = await fetch('/api/xero/actuals', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accessToken, year, tenantId, categoryAccountCodes }),
-        });
-        const { results } = await res.json();
-        if (!results) continue;
-        updatedBudgetData[centre.id] = updatedBudgetData[centre.id].map(item => {
-          const categoryActuals = results[item.category] || {};
-          const monthlyData: { [month: string]: number } = {};
-          months.forEach((m, idx) => {
-            const dateKey = `${year}-${String(idx+1).padStart(2,'0')}-01`;
-            monthlyData[m] = categoryActuals[dateKey] || 0;
-          });
-          const actualSpend = months.reduce((sum, m) => sum + (monthlyData[m] || 0), 0);
-          return {
-            ...item,
-            actualSpend,
-            monthlyData,
-            variance: (item.monthlyBudget * 12) - actualSpend,
-          };
-        });
+        return flat;
       }
-      setBudgetData(updatedBudgetData);
+
+      // Build a reverse map: tenantId -> centreId
+      const tenantIdToCentreId: { [tenantId: string]: string } = {};
+      Object.entries(CENTRE_TENANT_MAP).forEach(([centreId, tenantId]) => {
+        tenantIdToCentreId[tenantId] = centreId;
+      });
+
+      setBudgetData(prev => {
+        const updated = { ...prev };
+        for (const result of pnlResults) {
+          if (!result.pnl || !result.tenant) continue;
+          // Find centreId by matching tenantId
+          const tenantId = result.tenantId || result.tenant_id; // simplified fallback
+          let centreKey = null;
+          if (tenantId && tenantIdToCentreId[tenantId]) {
+            centreKey = tenantIdToCentreId[tenantId];
+          } else {
+            // fallback: try to match by tenant name substring (legacy)
+            centreKey = Object.keys(CENTRE_TENANT_MAP).find(cid => result.tenant && result.tenant.toLowerCase().includes(cid));
+          }
+          if (!centreKey) continue;
+          const rows = result.pnl?.Reports?.[0]?.Rows || [];
+          // Find the header row to get month labels
+          const headerRow = rows.find((r: any) => r.RowType === 'Header');
+          const monthLabels = headerRow && headerRow.Cells ? headerRow.Cells.slice(1).map((c: any) => c.Value) : [];
+          const flatRows = flattenRows(rows);
+          updated[centreKey] = (updated[centreKey] || []).map(item => {
+            // Try to match by category/account name
+            const row = flatRows.find((r: any) => r.Cells && r.Cells[0]?.Value && r.Cells[0].Value.toLowerCase().includes(item.category.toLowerCase()));
+            if (!row || !row.Cells) return item;
+            // Map each month's value to the correct key (JAN, FEB, ...)
+            const monthlyData = { ...item.monthlyData };
+            monthLabels.forEach((label: string, idx: number) => {
+              // label: "31 Jan 25" etc
+              const [d, mon, yy] = label.split(' ');
+              const monthMap: any = {Jan:'JAN',Feb:'FEB',Mar:'MAR',Apr:'APR',May:'MAY',Jun:'JUN',Jul:'JUL',Aug:'AUG',Sep:'SEP',Oct:'OCT',Nov:'NOV',Dec:'DEC'};
+              const key = monthMap[mon];
+              const cell = row.Cells[idx+1];
+              const value = cell && cell.Value ? parseFloat(cell.Value.replace(/[^\d.-]/g, '')) : 0;
+              monthlyData[key] = value;
+            });
+            // Sum all months for actualSpend
+            const actualSpend = Object.values(monthlyData).reduce((sum, v) => sum + (typeof v === 'number' ? v : 0), 0);
+            return {
+              ...item,
+              actualSpend,
+              variance: (item.monthlyBudget * 12) - actualSpend,
+              monthlyData,
+            };
+          });
+        }
+        return updated;
+      });
       setLastSyncTime(new Date());
-      console.log('Xero data updated for all centres');
+      console.log('Xero P&L data updated for all centres');
     } catch (error) {
-      console.error('Error fetching Xero data:', error);
+      console.error('Error fetching Xero P&L data:', error);
     }
-  };
-
-  // Generate more realistic live data (less random)
-  const generateLiveActualSpend = (monthlyBudget: number): number => {
-    // Actual spending tends to be 85-110% of budget
-    const variance = 0.85 + Math.random() * 0.25;
-    return Math.round(monthlyBudget * variance * 8); // 8 months of data
-  };
-
-  const generateLiveMonthlyData = (monthlyBudget: number): { [month: string]: number } => {
-    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG'];
-    const monthlyData: { [month: string]: number } = {};
-    
-    months.forEach(month => {
-      // Live data has less variance (90-110% of average)
-      const variance = 0.9 + Math.random() * 0.2;
-      monthlyData[month] = Math.round(monthlyBudget * variance);
-    });
-    
-    // Future months show 0
-    ['SEP', 'OCT', 'NOV', 'DEC'].forEach(month => {
-      monthlyData[month] = 0;
-    });
-    
-    return monthlyData;
   };
 
   const toggleCentre = (centreId: string) => {
@@ -510,7 +505,7 @@ export default function XeroPage() {
               Go to Budget Management
             </button>
             <button
-              onClick={loadBudgetData}
+              // onClick removed; loadBudgetData no longer used
               className="bg-gray-600 text-white px-8 py-4 rounded-2xl hover:bg-gray-700 transition-all duration-300 font-semibold shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-3"
             >
               <span className="text-lg">🔄</span>

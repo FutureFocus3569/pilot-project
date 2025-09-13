@@ -24,7 +24,7 @@ async function setupBudgetSystem() {
         name: 'Courtney',
         password: hashedPassword,
         role: 'MASTER',
-        organizationId: organization.id,
+  centreId: organization.id,
         isActive: true
       }
     });
@@ -41,17 +41,16 @@ async function setupBudgetSystem() {
     ];
 
     const centres = [];
-    for (const centreDef of centreDefinitions) {
-      const centre = await prisma.centre.create({
-        data: {
-          name: centreDef.name,
-          code: centreDef.code,
-          organizationId: organization.id,
-          capacity: centreDef.capacity,
-        }
-      });
-      centres.push(centre);
-      console.log(`✅ Created centre: ${centreDef.name}`);
+    // for (const centreDef of centreDefinitions) {
+    //   const centre = await prisma.centre.create({
+    //     data: {
+    //       name: centreDef.name,
+    //       code: centreDef.code,
+    //       capacity: centreDef.capacity,
+    //     }
+    //   });
+    //   centres.push(centre);
+    //   console.log(`✅ Created centre: ${centreDef.name}`);
     }
 
     // 4. Create budget categories (from your screenshot)

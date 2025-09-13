@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,144 +8,221 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-// User and authentication models
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  password      String
-  role          UserRole  @default(USER)
-  isActive      Boolean   @default(true)
-  centreId      String
-  centre        Centre @relation(fields: [centreId], references: [id])
-  
-  // Centre permissions - many-to-many relationship
+  id                String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email             String                 @unique
+  name              String?
+  password          String
+  role              UserRole               @default(USER)
+  isActive          Boolean                @default(true)
+  organizationId    String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  centreId          String?                @default("")
   centrePermissions UserCentrePermission[]
-  
-  // Page permissions - new enhanced permissions
   pagePermissions   UserPagePermission[]
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  organizations     Organization?          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
 
   @@map("users")
 }
 
-// Junction table for user-centre permissions
 model UserCentrePermission {
-  id        String @id @default(cuid())
-  userId    String
-  centreId  String
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  centre    Centre @relation(fields: [centreId], references: [id], onDelete: Cascade)
-  
-  // Specific permissions for this centre
-  canViewOccupancy    Boolean @default(true)
-  canEditOccupancy    Boolean @default(false)
-  canViewFinancials   Boolean @default(false)
-  canEditFinancials   Boolean @default(false)
-  canViewEnrollments  Boolean @default(true)
-  canEditEnrollments  Boolean @default(false)
-  canViewReports      Boolean @default(true)
-  canManageStaff      Boolean @default(false)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  id                 String   @id @default(cuid())
+  userId             String   @db.Uuid
+  centreId           String
+  canViewOccupancy   Boolean  @default(true)
+  canEditOccupancy   Boolean  @default(false)
+  canViewFinancials  Boolean  @default(false)
+  canEditFinancials  Boolean  @default(false)
+  canViewEnrollments Boolean  @default(true)
+  canEditEnrollments Boolean  @default(false)
+  canViewReports     Boolean  @default(true)
+  canManageStaff     Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  centre             Centre   @relation(fields: [centreId], references: [id], onDelete: Cascade)
+  user               User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_centre_permissions_userid_fkey")
+
   @@unique([userId, centreId])
   @@map("user_centre_permissions")
 }
 
 model Organization {
-  id            String    @id @default(cuid())
-  name          String
-  slug          String    @unique
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  centres       Centre[]
-  xeroConfig    XeroConfig?
+  id         String      @id @default(cuid())
+  name       String
+  slug       String      @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  centres    Centre[]
+  users      User[]
+  xeroConfig XeroConfig?
 
   @@map("organizations")
 }
 
-// Childcare centre models
 model Centre {
-  id              String    @id @default(cuid())
-  name            String
-  code            String    @unique // e.g. "CC1", "CC2"
-  address         String?
-  phone           String?
-  capacity        Int?
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id])
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-
-  users                 User[]
-  occupancyData         OccupancyData[]
-  staffHours            StaffHours[]
-  userPermissions       UserCentrePermission[]
+  id                     String                 @id @default(cuid())
+  name                   String
+  code                   String                 @unique
+  address                String?
+  phone                  String?
+  capacity               Int?
+  organizationId         String
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  centreId               String?                @default("")
+  tenantid               String?
+  overdueInvoicesAmount  Decimal?               @db.Decimal(10, 2)
+  discoverApiId          String?                @db.Uuid
   centreBudgetCategories CentreBudgetCategory[]
+  organization           Organization           @relation(fields: [organizationId], references: [id])
+  occupancyData          OccupancyData[]
+  staffHours             StaffHours[]
+  userPermissions        UserCentrePermission[]
 
   @@map("centres")
 }
 
-// Occupancy tracking
 model OccupancyData {
-  id          String    @id @default(cuid())
-  centreId    String
-  centre      Centre    @relation(fields: [centreId], references: [id])
-  
-  date        DateTime
-  u2Count     Int       // Under 2 years occupancy
-  o2Count     Int       // Over 2 years occupancy
-  totalCount  Int       // Total occupancy
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  centreId   String
+  date       DateTime
+  u2Count    Int
+  o2Count    Int
+  totalCount Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  centre     Centre   @relation(fields: [centreId], references: [id])
 
   @@unique([centreId, date])
   @@map("occupancy_data")
 }
 
-// Staff hours tracking
 model StaffHours {
   id          String    @id @default(cuid())
   centreId    String
-  centre      Centre    @relation(fields: [centreId], references: [id])
-  
-  weekStart   DateTime  // Start of the week
-  weekEnd     DateTime  // End of the week
+  weekStart   DateTime
+  weekEnd     DateTime
   staffType   StaffType
   hoursWorked Float
   hoursPaid   Float?
-  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  centre      Centre    @relation(fields: [centreId], references: [id])
 
   @@unique([centreId, weekStart, staffType])
   @@map("staff_hours")
 }
 
-// Import tracking for CSV uploads
 model ImportLog {
-  id          String      @id @default(cuid())
-  fileName    String
-  importType  ImportType
+  id               String     @id @default(cuid())
+  fileName         String
+  importType       ImportType
   recordsProcessed Int
   recordsSuccess   Int
   recordsErrors    Int
   errorDetails     Json?
-  
-  createdAt   DateTime  @default(now())
+  createdAt        DateTime   @default(now())
 
   @@map("import_logs")
 }
 
-// Enums
+model UserPagePermission {
+  id           String        @id @default(cuid())
+  userId       String        @db.Uuid
+  page         DashboardPage
+  canAccess    Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  xeroTenantId String?
+  user         User          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_page_permissions_userid_fkey")
+
+  @@unique([userId, page])
+  @@map("user_page_permissions")
+}
+
+model BudgetCategory {
+  id             String                 @id @default(cuid())
+  name           String
+  description    String?
+  isActive       Boolean                @default(true)
+  sortOrder      Int                    @default(0)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  actualExpenses ActualExpense[]
+  centreBudgets  CentreBudgetCategory[]
+
+  @@map("budget_categories")
+}
+
+model CentreBudgetCategory {
+  id              String          @id @default(cuid())
+  centreId        String
+  categoryId      String
+  xeroAccountCode String?
+  xeroAccountName String?
+  monthlyBudget   Decimal         @db.Decimal(10, 2)
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  year            Int?            @default(2025)
+  xerotenantid    String?
+  expenses        ActualExpense[]
+  category        BudgetCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  centre          Centre          @relation(fields: [centreId], references: [id], onDelete: Cascade)
+
+  @@unique([centreId, categoryId])
+  @@map("centre_budget_categories")
+}
+
+model ActualExpense {
+  id                     String               @id @default(cuid())
+  centreBudgetCategoryId String
+  year                   Int
+  month                  Int
+  xeroTransactionId      String?              @unique
+  actualAmount           Decimal              @db.Decimal(10, 2)
+  xeroSyncDate           DateTime?
+  categoryId             String
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  category               BudgetCategory       @relation(fields: [categoryId], references: [id])
+  centreBudgetCategory   CentreBudgetCategory @relation(fields: [centreBudgetCategoryId], references: [id], onDelete: Cascade)
+
+  @@unique([centreBudgetCategoryId, year, month])
+  @@map("actual_expenses")
+}
+
+model XeroConfig {
+  id              String        @id @default(cuid())
+  organizationId  String        @unique
+  xeroTenantId    String?
+  accessToken     String?
+  refreshToken    String?
+  tokenExpiry     DateTime?
+  lastSyncDate    DateTime?
+  autoSyncEnabled Boolean       @default(false)
+  syncFrequency   SyncFrequency @default(DAILY)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("xero_config")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model xero_connections {
+  id            String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id     String    @unique(map: "xero_connections_tenant_id_unique")
+  access_token  String?
+  refresh_token String?
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  expires_at    DateTime? @db.Timestamptz(6)
+  tenant_name   String?
+
+  @@id([id, tenant_id])
+}
+
 enum UserRole {
   MASTER
   ADMIN
@@ -171,119 +242,6 @@ enum ImportType {
   CENTRES
 }
 
-// Enhanced Permission System
-
-// Page-level permissions for users
-model UserPagePermission {
-  id        String @id @default(cuid())
-  userId    String
-  page      DashboardPage
-  canAccess Boolean @default(true)
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  @@unique([userId, page])
-  @@map("user_page_permissions")
-}
-
-// Budget and Financial Management
-
-// Master list of budget categories
-model BudgetCategory {
-  id          String @id @default(cuid())
-  name        String // e.g., "Food Costs", "Cleaning Supplies"
-  description String?
-  isActive    Boolean @default(true)
-  sortOrder   Int     @default(0)
-  
-  // Relations
-  centreBudgets    CentreBudgetCategory[]
-  actualExpenses   ActualExpense[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("budget_categories")
-}
-
-// Budget categories specific to each centre (with Xero mapping)
-model CentreBudgetCategory {
-  id              String @id @default(cuid())
-  centreId        String
-  categoryId      String
-  
-  // Xero integration
-  xeroAccountCode String? // Chart of accounts code in Xero
-  xeroAccountName String? // Account name in Xero
-  
-  // Budget settings
-  monthlyBudget   Decimal @db.Decimal(10,2) // Same amount each month
-  isActive        Boolean @default(true)
-  
-  // Relations
-  centre     Centre        @relation(fields: [centreId], references: [id], onDelete: Cascade)
-  category   BudgetCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  expenses   ActualExpense[]
-  
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  
-  @@unique([centreId, categoryId])
-  @@map("centre_budget_categories")
-}
-
-// Actual expenses pulled from Xero
-model ActualExpense {
-  id                    String @id @default(cuid())
-  centreBudgetCategoryId String
-  year                  Int
-  month                 Int    // 1-12
-  
-  // Xero data
-  xeroTransactionId     String? @unique
-  actualAmount          Decimal @db.Decimal(10,2)
-  xeroSyncDate          DateTime?
-  
-  // Relations
-  centreBudgetCategory  CentreBudgetCategory @relation(fields: [centreBudgetCategoryId], references: [id], onDelete: Cascade)
-  category             BudgetCategory       @relation(fields: [categoryId], references: [id])
-  categoryId           String // For easier querying
-  
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  
-  @@unique([centreBudgetCategoryId, year, month])
-  @@map("actual_expenses")
-}
-
-// Xero integration settings
-model XeroConfig {
-  id              String @id @default(cuid())
-  organizationId  String @unique
-  
-  // Xero OAuth credentials
-  xeroTenantId    String?
-  accessToken     String? // Encrypted
-  refreshToken    String? // Encrypted
-  tokenExpiry     DateTime?
-  
-  // Sync settings
-  lastSyncDate    DateTime?
-  autoSyncEnabled Boolean @default(false)
-  syncFrequency   SyncFrequency @default(DAILY)
-  
-  // Relations
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@map("xero_config")
-}
-
-// Additional Enums
 enum DashboardPage {
   DASHBOARD
   XERO

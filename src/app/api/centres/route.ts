@@ -59,10 +59,11 @@ export async function GET() {
           code: true,
           address: true,
           capacity: true,
+          overdueInvoicesAmount: true,
+          discoverApiId: true,
         },
         orderBy: { name: 'asc' }
       });
-      
       if (centres.length > 0) {
         console.log('✅ Centres fetched from database:', centres.length);
         return NextResponse.json(centres);

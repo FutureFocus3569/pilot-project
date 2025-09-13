@@ -58,7 +58,7 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, organizationId: user.organizationId }),
+        body: JSON.stringify({ ...form, centreId: user.centreId }),
       });
       if (!res.ok) {
         const err = await res.json();

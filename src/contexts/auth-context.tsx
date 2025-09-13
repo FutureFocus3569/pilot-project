@@ -9,6 +9,7 @@ export interface User {
   role: 'MASTER' | 'ADMIN' | 'USER';
   isActive: boolean;
   organizationId: string;
+  xeroCentres?: string[];
   centrePermissions?: {
     centreId: string;
     centreName: string;

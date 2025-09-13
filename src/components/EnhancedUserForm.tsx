@@ -1,5 +1,5 @@
 type Role = 'MASTER' | 'ADMIN' | 'USER';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { UserPlus, Building2, CheckSquare, Square } from 'lucide-react';
 
 interface Centre {
@@ -27,11 +27,13 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
     name: string;
     email: string;
     password: string;
+    location: string;
     role: Role;
   }>({
     name: '',
     email: '',
     password: '',
+    location: '',
     role: 'USER',
   });
 
@@ -45,20 +47,20 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
 
   const [pagePermissions, setPagePermissions] = useState<PagePermission[]>([
     { page: 'DASHBOARD', enabled: true, centreIds: [] },
-    { page: 'XERO', enabled: false, centreIds: [] },
+    { page: 'QUICK_ACCESS', enabled: false, centreIds: [] },
+    { page: 'BUDGET', enabled: false, centreIds: [] },
     { page: 'MARKETING', enabled: false, centreIds: [] },
-    { page: 'DATA_MANAGEMENT', enabled: false, centreIds: [] },
-    { page: 'ADMIN', enabled: false, centreIds: [] },
     { page: 'ASSISTANT', enabled: false, centreIds: [] },
+    { page: 'STAFF_MANAGEMENT', enabled: false, centreIds: [] },
   ]);
 
   const pageDescriptions = {
-    DASHBOARD: 'View and manage daily operations, occupancy, and reports',
-    XERO: 'Access financial data, invoicing, and accounting features',
-    MARKETING: 'Manage marketing campaigns and communications',
-    DATA_MANAGEMENT: 'Access to data exports and analytics',
-    ADMIN: 'User management and system administration',
-    ASSISTANT: 'AI assistant for support and automation'
+    DASHBOARD: 'Access to dashboard section',
+    QUICK_ACCESS: 'Access to quick access section',
+    BUDGET: 'Access to budget section',
+    MARKETING: 'Access to marketing section',
+    ASSISTANT: 'Access to assistant section',
+    STAFF_MANAGEMENT: 'Access to staff management section',
   };
 
   const handlePagePermissionChange = (pageIndex: number, enabled: boolean) => {
@@ -100,7 +102,7 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
     
     const userData = {
       ...formData,
-      organizationId: 'org_futurefocus', // Default org
+  centreId: 'centre_futurefocus', // Default centre
       pagePermissions: pagePermissions.filter(p => p.enabled)
     };
     
@@ -149,6 +151,27 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Location *
+                </label>
+                <select
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select location</option>
+                  <option value="Papamoa Beach">Papamoa Beach</option>
+                  <option value="The Boulevard">The Boulevard</option>
+                  <option value="The Bach">The Bach</option>
+                  <option value="Terrace Views">Terrace Views</option>
+                  <option value="Livingstone Drive">Livingstone Drive</option>
+                  <option value="West Dune">West Dune</option>
+                  <option value="Head Office">Head Office</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Password *
                 </label>
                 <input
@@ -173,9 +196,9 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
                   }}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="USER">User - Limited access</option>
-                  <option value="ADMIN">Admin - Management access</option>
-                  <option value="MASTER">Master - Full access</option>
+                  <option value="USER">User - Basic Access</option>
+                  <option value="ADMIN">Admin - Management Access</option>
+                  <option value="MASTER">Master - Full Access</option>
                 </select>
               </div>
             </div>
@@ -184,8 +207,17 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Page Access & Centre Permissions</h3>
               <div className="space-y-6">
-                {pagePermissions.map((permission, pageIndex) => (
-                  <div key={permission.page} className="border border-gray-200 rounded-lg p-4">
+                {pagePermissions.map((permission, pageIndex) => {
+                  // Define which centres are available for each permission type
+                  let availableCentres = centres;
+                  if (permission.page === 'DASHBOARD' || permission.page === 'BUDGET') {
+                    availableCentres = centres.filter(c => c.name !== 'Head Office');
+                  } else if (permission.page === 'QUICK_ACCESS') {
+                    // All centres including Head Office
+                    availableCentres = centres;
+                  }
+                  return (
+                    <div key={permission.page} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-start gap-3 mb-3">
                       <button
                         type="button"
@@ -232,7 +264,7 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                          {centres.map((centre) => (
+                          {availableCentres.map((centre) => (
                             <label
                               key={centre.id}
                               className={`flex items-center gap-2 p-2 rounded border cursor-pointer transition-colors ${
