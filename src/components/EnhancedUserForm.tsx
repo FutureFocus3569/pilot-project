@@ -1,3 +1,4 @@
+// Trigger redeploy: 2025-09-13
 type Role = 'MASTER' | 'ADMIN' | 'USER';
 import React, { useState } from 'react';
 import { UserPlus, Building2, CheckSquare, Square } from 'lucide-react';
