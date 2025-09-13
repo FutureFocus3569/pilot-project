@@ -122,9 +122,8 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name *
+                  </div>
+                })}
                 </label>
                 <input
                   type="text"
@@ -209,92 +208,88 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Page Access & Centre Permissions</h3>
               <div className="space-y-6">
                 {pagePermissions.map((permission, pageIndex) => {
-                  // Define which centres are available for each permission type
                   let availableCentres = centres;
                   if (permission.page === 'DASHBOARD' || permission.page === 'BUDGET') {
                     availableCentres = centres.filter(c => c.name !== 'Head Office');
                   } else if (permission.page === 'QUICK_ACCESS') {
-                    // All centres including Head Office
                     availableCentres = centres;
                   }
                   return (
                     <div key={permission.page} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3 mb-3">
-                      <button
-                        type="button"
-                        onClick={() => handlePagePermissionChange(pageIndex, !permission.enabled)}
-                        className="mt-1"
-                      >
-                        {permission.enabled ? (
-                          <CheckSquare className="h-5 w-5 text-blue-600" />
-                        ) : (
-                          <Square className="h-5 w-5 text-gray-400" />
-                        )}
-                      </button>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{permission.page}</h4>
-                        <p className="text-sm text-gray-600">
-                          {pageDescriptions[permission.page as keyof typeof pageDescriptions]}
-                        </p>
+                      <div className="flex items-start gap-3 mb-3">
+                        <button
+                          type="button"
+                          onClick={() => handlePagePermissionChange(pageIndex, !permission.enabled)}
+                          className="mt-1"
+                        >
+                          {permission.enabled ? (
+                            <CheckSquare className="h-5 w-5 text-blue-600" />
+                          ) : (
+                            <Square className="h-5 w-5 text-gray-400" />
+                          )}
+                        </button>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">{permission.page}</h4>
+                          <p className="text-sm text-gray-600">
+                            {pageDescriptions[permission.page as keyof typeof pageDescriptions]}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-
-                    {permission.enabled && (
-                      <div className="ml-8 border-t pt-3">
-                        <div className="flex items-center justify-between mb-3">
-                          <h5 className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                            <Building2 className="h-4 w-4" />
-                            Select Centres for {permission.page}
-                          </h5>
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleSelectAllCentres(pageIndex)}
-                              className="text-xs text-blue-600 hover:text-blue-800"
-                            >
-                              Select All
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleClearAllCentres(pageIndex)}
-                              className="text-xs text-red-600 hover:text-red-800"
-                            >
-                              Clear All
-                            </button>
+                      {permission.enabled && (
+                        <div className="ml-8 border-t pt-3">
+                          <div className="flex items-center justify-between mb-3">
+                            <h5 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                              <Building2 className="h-4 w-4" />
+                              Select Centres for {permission.page}
+                            </h5>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleSelectAllCentres(pageIndex)}
+                                className="text-xs text-blue-600 hover:text-blue-800"
+                              >
+                                Select All
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleClearAllCentres(pageIndex)}
+                                className="text-xs text-red-600 hover:text-red-800"
+                              >
+                                Clear All
+                              </button>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {availableCentres.map((centre) => (
+                              <label
+                                key={centre.id}
+                                className={`flex items-center gap-2 p-2 rounded border cursor-pointer transition-colors ${
+                                  permission.centreIds.includes(centre.id)
+                                    ? 'bg-blue-50 border-blue-200'
+                                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={permission.centreIds.includes(centre.id)}
+                                  onChange={() => handleCentreToggle(pageIndex, centre.id)}
+                                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-sm text-gray-900">{centre.name}</div>
+                                  <div className="text-xs text-gray-500">{centre.code}</div>
+                                </div>
+                              </label>
+                            ))}
+                          </div>
+                          <div className="mt-2 text-xs text-gray-600">
+                            {permission.centreIds.length} of {centres.length} centres selected
                           </div>
                         </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                          {availableCentres.map((centre) => (
-                            <label
-                              key={centre.id}
-                              className={`flex items-center gap-2 p-2 rounded border cursor-pointer transition-colors ${
-                                permission.centreIds.includes(centre.id)
-                                  ? 'bg-blue-50 border-blue-200'
-                                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={permission.centreIds.includes(centre.id)}
-                                onChange={() => handleCentreToggle(pageIndex, centre.id)}
-                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="font-medium text-sm text-gray-900">{centre.name}</div>
-                                <div className="text-xs text-gray-500">{centre.code}</div>
-                              </div>
-                            </label>
-                          ))}
-                        </div>
-
-                        <div className="mt-2 text-xs text-gray-600">
-                          {permission.centreIds.length} of {centres.length} centres selected
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
