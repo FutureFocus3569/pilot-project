@@ -294,7 +294,6 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
                     )}
                   </div>
                 ))}
-              ;
               </div>
 
             {/* Submit Buttons */}
