@@ -295,6 +295,7 @@ export function EnhancedUserForm({ onSubmit, onCancel, centres }: EnhancedUserFo
                   </div>
                 ))}
               </div>
+            </div>
 
             {/* Submit Buttons */}
             <div className="flex justify-end gap-3 pt-4 border-t">
