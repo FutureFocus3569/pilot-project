@@ -40,7 +40,7 @@ async function setupBudgetSystem() {
       { name: 'West Dune', code: 'WD1', capacity: 100 },
     ];
 
-  const centres = [];
+  const centres: any[] = [];
   // for (const centreDef of centreDefinitions) {
   //   const centre = await prisma.centre.create({
   //     data: {
