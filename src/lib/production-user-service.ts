@@ -112,7 +112,7 @@ class ProductionUserService {
         ...user,
         name: user.name || '',
         centrePermissions: user.centrePermissions.map(cp => ({
-          centreId: cp.centreId,
+          centreId: cp.centreId ?? '',
           centreName: cp.centre.name,
           centreCode: cp.centre.code,
           permissions: {
@@ -234,6 +234,7 @@ class ProductionUserService {
         return {
           ...result,
           name: result.name || '',
+          centreId: result.centreId ?? '',
         };
       }
       return result;
