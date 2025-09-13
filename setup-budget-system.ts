@@ -40,18 +40,18 @@ async function setupBudgetSystem() {
       { name: 'West Dune', code: 'WD1', capacity: 100 },
     ];
 
-    const centres = [];
-    // for (const centreDef of centreDefinitions) {
-    //   const centre = await prisma.centre.create({
-    //     data: {
-    //       name: centreDef.name,
-    //       code: centreDef.code,
-    //       capacity: centreDef.capacity,
-    //     }
-    //   });
-    //   centres.push(centre);
-    //   console.log(`✅ Created centre: ${centreDef.name}`);
-    }
+  const centres = [];
+  // for (const centreDef of centreDefinitions) {
+  //   const centre = await prisma.centre.create({
+  //     data: {
+  //       name: centreDef.name,
+  //       code: centreDef.code,
+  //       capacity: centreDef.capacity,
+  //     }
+  //   });
+  //   centres.push(centre);
+  //   console.log(`✅ Created centre: ${centreDef.name}`);
+  // }
 
     // 4. Create budget categories (from your screenshot)
     const budgetCategories = [
