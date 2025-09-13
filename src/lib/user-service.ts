@@ -23,6 +23,7 @@ export interface User {
   role: 'MASTER' | 'ADMIN' | 'USER';
   isActive: boolean;
   centreId: string;
+  organizationId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
