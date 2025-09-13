@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     console.error('Error creating user:', error);
     // Return the actual error message for debugging
     return NextResponse.json(
-      { error: error?.message || error?.toString() || 'Internal server error' },
+      { error: (error instanceof Error ? error.message : error?.toString()) || 'Internal server error' },
       { status: 500 }
     );
   }
