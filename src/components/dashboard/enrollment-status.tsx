@@ -166,10 +166,10 @@ export function EnrollmentStatus() {
     }
   };
 
-  // Filter to only allowed centres
-  const allowedCentres = user?.dashboardCentres || [];
-  const filteredCentres = allowedCentres.length > 0
-    ? centres.filter(c => allowedCentres.includes(c.name))
+  // Filter to only allowed centres based on centrePermissions
+  const allowedCentreNames = user?.centrePermissions?.map(cp => cp.centreName) || [];
+  const filteredCentres = allowedCentreNames.length > 0
+    ? centres.filter(c => allowedCentreNames.includes(c.name))
     : centres;
 
   if (loading) {
