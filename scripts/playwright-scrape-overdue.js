@@ -39,7 +39,7 @@ async function scrapeOverdueAmount(page, discoverApiId) {
 }
 
 (async () => {
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
   await page.goto(LOGIN_URL);
   await page.fill('input[name="Email"]', USERNAME);
