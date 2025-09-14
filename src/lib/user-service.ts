@@ -203,7 +203,7 @@ class UserService {
   const apiUser: Omit<User, 'password'> = {
     id: user.id,
     name: user.name ?? '',
-    centreId: user.centreId,
+  centreId: user.centreId ?? "",
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     isActive: user.isActive,
