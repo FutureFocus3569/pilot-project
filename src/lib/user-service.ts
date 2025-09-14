@@ -95,7 +95,7 @@ class UserService {
   return users.map(u => ({
     id: u.id,
     name: u.name ?? '',
-    centreId: u.centreId,
+    centreId: u.centreId ?? '',
     createdAt: u.createdAt,
     updatedAt: u.updatedAt,
     isActive: u.isActive,
