@@ -1,3 +1,136 @@
+// Scrape the total number of 'Waiting' children for Papamoa Beach
+async function scrapeWaitingChildrenCount(page) {
+  // Untick 'Future' by clicking its label (if checked)
+  const futureChecked = await page.isChecked('input[type="checkbox"][name="Future"]');
+  if (futureChecked) {
+    await page.click('label[for="Future"]');
+    await page.waitForTimeout(500);
+  }
+  // Tick 'Waiting' by clicking its label (if not checked)
+  const waitingChecked = await page.isChecked('input[type="checkbox"][name="Waiting"]');
+  if (!waitingChecked) {
+    await page.click('label[for="Waiting"]');
+    await page.waitForTimeout(500);
+  }
+  // Wait for the info text to disappear and reappear
+  await page.waitForSelector('.dataTables_info', { state: 'detached', timeout: 5000 }).catch(() => {});
+  await page.waitForSelector('.dataTables_info', { timeout: 5000 });
+  // Extract the total from the info text (with retry)
+  let total = null;
+  for (let i = 0; i < 5; i++) {
+    total = await page.evaluate(() => {
+      const info = document.querySelector('.dataTables_info');
+      if (!info) return null;
+      const match = info.textContent && info.textContent.match(/of (\d+) entries/);
+      return match ? parseInt(match[1], 10) : null;
+    });
+    if (total !== null) break;
+    await page.waitForTimeout(500);
+  }
+  return total;
+}
+
+// Scrape the total number of 'Enquiry' children for Papamoa Beach
+async function scrapeEnquiryChildrenCount(page) {
+  // Untick 'Waiting' by clicking its label (if checked)
+  const waitingChecked = await page.isChecked('input[type="checkbox"][name="Waiting"]');
+  if (waitingChecked) {
+    await page.click('label[for="Waiting"]');
+    await page.waitForTimeout(500);
+  }
+  // Tick 'Enquiry' by clicking its label (if not checked)
+  const enquiryChecked = await page.isChecked('input[type="checkbox"][name="Enquiry"]');
+  if (!enquiryChecked) {
+    await page.click('label[for="Enquiry"]');
+    await page.waitForTimeout(500);
+  }
+  // Wait for the info text to disappear and reappear
+  await page.waitForSelector('.dataTables_info', { state: 'detached', timeout: 5000 }).catch(() => {});
+  await page.waitForSelector('.dataTables_info', { timeout: 5000 });
+  // Extract the total from the info text (with retry)
+  let total = null;
+  for (let i = 0; i < 5; i++) {
+    total = await page.evaluate(() => {
+      const info = document.querySelector('.dataTables_info');
+      if (!info) return null;
+      const match = info.textContent && info.textContent.match(/of (\d+) entries/);
+      return match ? parseInt(match[1], 10) : null;
+    });
+    if (total !== null) break;
+    await page.waitForTimeout(500);
+  }
+  return total;
+}
+// Scrape the total number of 'Future' children for Papamoa Beach
+async function scrapeFutureChildrenCount(page, discoverApiId) {
+  // Assumes already on the Child page after scraping 'Current'.
+  // Go to the filter section and untick 'Current', tick 'Future'.
+  // Wait for the filter section to be visible
+  await page.waitForSelector('label[for="Current"]');
+  // Untick 'Current' by clicking its label (if checked)
+  const currentChecked = await page.isChecked('input[type="checkbox"][name="Current"]');
+  if (currentChecked) {
+    await page.click('label[for="Current"]');
+    await page.waitForTimeout(500); // Wait for UI to update
+  }
+  // Tick 'Future' by clicking its label (if not checked)
+  const futureChecked = await page.isChecked('input[type="checkbox"][name="Future"]');
+  if (!futureChecked) {
+    await page.click('label[for="Future"]');
+    await page.waitForTimeout(500); // Wait for UI to update
+  }
+  // Wait for the info text to disappear (table reload) and then reappear
+  await page.waitForSelector('.dataTables_info', { state: 'detached', timeout: 5000 }).catch(() => {});
+  await page.waitForSelector('.dataTables_info', { timeout: 5000 });
+  // Extract the total from the info text (with retry)
+  let total = null;
+  for (let i = 0; i < 5; i++) {
+    total = await page.evaluate(() => {
+      const info = document.querySelector('.dataTables_info');
+      if (!info) return null;
+      const match = info.textContent && info.textContent.match(/of (\d+) entries/);
+      return match ? parseInt(match[1], 10) : null;
+    });
+    if (total !== null) break;
+    await page.waitForTimeout(500);
+  }
+  return total;
+}
+// Scrape the total number of 'Current' children for Papamoa Beach
+async function scrapeCurrentChildrenCount(page, discoverApiId) {
+  const url = `https://discoverchildcare.co.nz/${discoverApiId}/Child`;
+  await page.goto(url);
+  // Ensure only 'Current' is checked (uncheck others)
+  await page.waitForSelector('input[type="checkbox"][name="Current"]');
+  // Uncheck all except 'Current'
+  const filters = ['Future', 'Waiting', 'Enquiry', 'Past'];
+  for (const filter of filters) {
+    const selector = `input[type="checkbox"][name="${filter}"]`;
+    if (await page.isChecked(selector)) {
+      await page.click(selector);
+    }
+  }
+  // Make sure 'Current' is checked
+  const currentSelector = 'input[type="checkbox"][name="Current"]';
+  if (!(await page.isChecked(currentSelector))) {
+    await page.click(currentSelector);
+  }
+  // Wait for the table to update (wait for the info text to appear)
+  await page.waitForSelector('.dataTables_info', { timeout: 5000 });
+  // Extract the total from the info text (with retry)
+  let total = null;
+  for (let i = 0; i < 5; i++) {
+    total = await page.evaluate(() => {
+      const info = document.querySelector('.dataTables_info');
+      if (!info) return null;
+      const match = info.textContent && info.textContent.match(/of (\d+) entries/);
+      return match ? parseInt(match[1], 10) : null;
+    });
+    if (total !== null) break;
+    await page.waitForTimeout(500);
+  }
+  return total;
+}
 // playwright-scrape-overdue.js
 // Script to log in to Discover Childcare, scrape overdue invoices for each centre, and update the DB
 // Usage: node playwright-scrape-overdue.js
@@ -38,6 +171,7 @@ async function scrapeOverdueAmount(page, discoverApiId) {
   return overdueAmount;
 }
 
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
@@ -47,27 +181,23 @@ async function scrapeOverdueAmount(page, discoverApiId) {
   await page.click('button[type="submit"]');
   await page.waitForNavigation();
 
+  // Scrape enrolment status counts for all centres
   for (const centre of CENTRES) {
     try {
-      const amount = await scrapeOverdueAmount(page, centre.discoverApiId);
-      if (amount !== null) {
-        // Try to update by discoverApiId if your DB has it, else fallback to name
-        const updated = await prisma.centre.updateMany({
-          where: { name: centre.name },
-          data: { overdueInvoicesAmount: amount },
-        });
-        if (updated.count > 0) {
-          console.log(`${centre.name}: $${amount} updated.`);
-        } else {
-          console.log(`${centre.name}: No matching centre in DB.`);
-        }
-      } else {
-        console.log(`${centre.name}: Could not find overdue amount.`);
-      }
+      const currentCount = await scrapeCurrentChildrenCount(page, centre.discoverApiId);
+      console.log(`${centre.name} - Current Children: ${currentCount}`);
+      const futureCount = await scrapeFutureChildrenCount(page, centre.discoverApiId);
+      console.log(`${centre.name} - Future Children: ${futureCount}`);
+      const waitingCount = await scrapeWaitingChildrenCount(page);
+      console.log(`${centre.name} - Waiting Children: ${waitingCount}`);
+      const enquiryCount = await scrapeEnquiryChildrenCount(page);
+      console.log(`${centre.name} - Enquiry Children: ${enquiryCount}`);
     } catch (e) {
-      console.error(`Error for ${centre.name}:`, e);
+      console.error(`Error scraping ${centre.name}:`, e);
     }
   }
+
+  // ...existing code for overdue invoices...
 
   await browser.close();
   await prisma.$disconnect();
