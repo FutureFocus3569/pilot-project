@@ -229,7 +229,7 @@ async function scrapeOverdueAmount(page, discoverApiId) {
 
   const browser = await chromium.launch({ headless: true });
 
-  // Scrape enrolment status counts for all centres
+  // Scrape enrolment status counts and overdue invoices for all centres
   for (const centre of CENTRES) {
     const page = await browser.newPage();
     try {
@@ -275,6 +275,14 @@ async function scrapeOverdueAmount(page, discoverApiId) {
           o2Count: 0,
           totalCount: 0,
         },
+      });
+
+      // Scrape and update overdue invoice amount for this centre
+      const overdueAmount = await scrapeOverdueAmount(page, centre.discoverApiId);
+      console.log(`${centre.name} - Overdue Invoice Amount: $${overdueAmount}`);
+      await prisma.centre.update({
+        where: { id: centre.id },
+        data: { overdueInvoicesAmount: overdueAmount },
       });
     } catch (e) {
       console.error(`Error scraping ${centre.name}:`, e);

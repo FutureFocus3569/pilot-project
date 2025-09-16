@@ -3,8 +3,8 @@ name: Scrape Overdue Invoices
 # One-off run for 2:00pm NZT (2:00am UTC) on 16 Sep 2025
 on:
   schedule:
-    - cron: '0 22,11 * * 1-5'
-    - cron: '0 2 16 9 *' # 2:00am UTC, 16 Sep 2025
+  - cron: '0 22,11,2 * * 1-5'
+  - cron: '0 2 16 9 *' # 2:00am UTC, 16 Sep 2025
   workflow_dispatch:
 
 jobs:

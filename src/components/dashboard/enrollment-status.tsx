@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
 interface EnrollmentData {
@@ -79,9 +79,12 @@ function EnrollmentCard({ centre }: EnrollmentCardProps) {
 
 export function EnrollmentStatus() {
   const { user } = useAuth();
+
   const [centres, setCentres] = useState<Centre[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
 
 
   const fetchEnrollmentData = async () => {
@@ -92,11 +95,14 @@ export function EnrollmentStatus() {
       const centreRes = await fetch("/api/centres");
       if (!centreRes.ok) throw new Error("Failed to fetch centres");
       const centreList = await centreRes.json();
-      // Fetch latest occupancy data for all centres
-      const occRes = await fetch("/api/occupancy");
+      // Calculate start and end date for selected month
+      const startDate = new Date(selectedYear, selectedMonth - 1, 1);
+      const endDate = new Date(selectedYear, selectedMonth, 0, 23, 59, 59, 999);
+      // Fetch occupancy data for selected month
+      const occRes = await fetch(`/api/occupancy?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
       if (!occRes.ok) throw new Error("Failed to fetch occupancy data");
       const occData = await occRes.json();
-      // Group by centreId, keep only latest record per centre
+      // Group by centreId, keep only latest record per centre in month
       const latestByCentre: Record<string, any> = {};
       occData.forEach((row: any) => {
         const cid = row.centreId;
@@ -138,7 +144,24 @@ export function EnrollmentStatus() {
 
   useEffect(() => {
     fetchEnrollmentData();
-  }, []);
+  }, [selectedYear, selectedMonth]);
+  // Month navigation controls
+  const handlePrevMonth = () => {
+    if (selectedMonth === 1) {
+      setSelectedYear(selectedYear - 1);
+      setSelectedMonth(12);
+    } else {
+      setSelectedMonth(selectedMonth - 1);
+    }
+  };
+  const handleNextMonth = () => {
+    if (selectedMonth === 12) {
+      setSelectedYear(selectedYear + 1);
+      setSelectedMonth(1);
+    } else {
+      setSelectedMonth(selectedMonth + 1);
+    }
+  };
 
   // Always show all six centres in the specified order
   const filteredCentres = centres;
@@ -180,16 +203,17 @@ export function EnrollmentStatus() {
               Live enrolment data - automatically updated weekdays at 11pm NZT
           </p>
         </div>
-        
-        <div className="flex items-center space-x-2 text-sm text-gray-500">
-          <RefreshCw className="h-4 w-4" />
-          <span className="hidden sm:inline">Auto-Updated Daily</span>
-          <div className="text-xs bg-gray-100 px-2 py-1 rounded hidden lg:block">
-            Data sourced from Discover
-          </div>
-          <div className="text-xs bg-gray-100 px-2 py-1 rounded hidden xl:block">
-              Auto-updated at 11pm NZT, Mon-Fri
-          </div>
+        {/* Month navigation */}
+        <div className="flex items-center space-x-2">
+          <button onClick={handlePrevMonth} className="p-2 rounded hover:bg-gray-100">
+            <ChevronLeft className="h-5 w-5 text-gray-500" />
+          </button>
+          <span className="font-medium text-gray-700">
+            {new Date(selectedYear, selectedMonth - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })}
+          </span>
+          <button onClick={handleNextMonth} className="p-2 rounded hover:bg-gray-100">
+            <ChevronRight className="h-5 w-5 text-gray-500" />
+          </button>
         </div>
       </div>
 

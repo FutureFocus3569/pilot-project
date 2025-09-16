@@ -21,21 +21,42 @@ export async function GET(request: NextRequest) {
     }
     console.log('Occupancy API Query:', { where, limit });
     try {
-      const occupancyData = await prisma.occupancyData.findMany({
-        where,
-        include: {
-          centre: {
-            select: {
-              name: true,
-              code: true,
-            },
-          },
-        },
-        orderBy: { date: 'desc' },
-        take: limit ? parseInt(limit) : undefined,
-      });
-      console.log('Occupancy API Result:', occupancyData);
-      return NextResponse.json(occupancyData);
+      // Query custom centre occupancy table
+      try {
+        // Validate date parameters
+        // Use ISO string for date comparison in SQL
+        const start = startDate ? new Date(startDate).toISOString().slice(0, 10) : null;
+        const end = endDate ? new Date(endDate).toISOString().slice(0, 10) : null;
+        console.log('Raw query params:', { start, end });
+  let occupancyData: any[] = [];
+        try {
+          occupancyData = await prisma.$queryRawUnsafe(
+            `SELECT id, "centreId", "month", "u2", "o2", "total"
+             FROM "centre_occupancy"
+             WHERE "month"::text >= $1 AND "month"::text <= $2
+             ORDER BY "month" DESC`,
+            start,
+            end
+          );
+        } catch (sqlError) {
+          console.error('SQL query error:', sqlError);
+          return NextResponse.json({ error: 'SQL query failed', details: String(sqlError) }, { status: 500 });
+        }
+        // Map fields for frontend
+        const mapped = occupancyData.map(row => ({
+          id: row.id,
+          centreId: row.centreId,
+          date: row.month,
+          u2Count: row.u2,
+          o2Count: row.o2,
+          total: row.total,
+        }));
+        console.log('Occupancy API Result:', mapped);
+        return NextResponse.json(mapped);
+      } catch (err) {
+        console.error('Raw query error:', err);
+        return NextResponse.json({ error: 'Raw query failed', details: String(err) }, { status: 500 });
+      }
     } catch (queryError) {
       console.error('Occupancy API Query Error:', queryError);
       throw queryError;

@@ -95,10 +95,10 @@ export function OccupancyCards() {
 
   // Helper function to get occupancy data for selected month
   interface OccupancyData {
-    u2Count: number;
-    o2Count: number;
-    totalCount: number;
-    date: string;
+  u2Count: number;
+  o2Count: number;
+  total: number;
+  date: string;
   }
   interface Centre {
     id: string;
@@ -110,13 +110,23 @@ export function OccupancyCards() {
   const getOccupancyForMonth = (centre: Centre) => {
     const targetYear = selectedYear;
     const targetMonth = selectedMonth;
-    
-    const occupancyData = centre.occupancyData?.find((data: OccupancyData) => {
+    const occupancyData = centre.occupancyData?.find((data: any) => {
       const dataDate = new Date(data.date);
-      return dataDate.getFullYear() === targetYear && (dataDate.getMonth() + 1) === targetMonth;
+      return (
+        data.centreId === centre.id &&
+        dataDate.getFullYear() === targetYear &&
+        dataDate.getMonth() + 1 === targetMonth
+      );
     });
-    
-    return occupancyData || {
+    if (occupancyData) {
+      return {
+        u2Count: occupancyData.u2Count,
+        o2Count: occupancyData.o2Count,
+        totalCount: occupancyData.total,
+        date: occupancyData.date,
+      };
+    }
+    return {
       u2Count: 0,
       o2Count: 0,
       totalCount: 0,
@@ -155,25 +165,74 @@ export function OccupancyCards() {
   const fetchCentres = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/centres');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch centres');
-      }
-      
-      const centresData = await response.json();
-      
-      // Generate mock occupancy data for each centre
-      const centresWithOccupancy = centresData.map((centre: Centre) => ({
-        ...centre,
-        occupancyData: generateOccupancyData(centre.capacity || 50)
-      }));
-      
-      setCentres(centresWithOccupancy);
       setError(null);
+      // Fetch all centres
+      const centreRes = await fetch("/api/centres");
+      if (!centreRes.ok) throw new Error("Failed to fetch centres");
+      const centreList = await centreRes.json();
+      // Calculate start and end date for selected month
+      const startDate = new Date(selectedYear, selectedMonth - 1, 1);
+      const endDate = new Date(selectedYear, selectedMonth, 0, 23, 59, 59, 999);
+      // Fetch occupancy data for selected month
+      const occRes = await fetch(`/api/occupancy?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
+      if (!occRes.ok) throw new Error("Failed to fetch occupancy data");
+      const occData = await occRes.json();
+      // Group by centreId, keep only latest record per centre in month
+      type OccRow = {
+        centreId: string;
+        u2Count: number;
+        o2Count: number;
+        total: number;
+        date: string;
+      };
+      // Group records by centreId and filter by selected month/year
+      const byCentreMonth: Record<string, OccRow | undefined> = {};
+      (occData as OccRow[]).forEach((row: OccRow) => {
+        const cid = row.centreId;
+        const dataDate = new Date(row.date);
+        if (
+          dataDate.getFullYear() === selectedYear &&
+          dataDate.getMonth() + 1 === selectedMonth
+        ) {
+          byCentreMonth[cid] = row;
+        }
+      });
+      // Always enforce this order for rendering
+      const orderedCentres = [
+        "Papamoa Beach",
+        "The Boulevard",
+        "The Bach",
+        "Terrace Views",
+        "Livingstone Drive",
+        "West Dune"
+      ];
+      const centresOrdered = orderedCentres.map(name => {
+  const centre = centreList.find((c: any) => c.name === name);
+  const occ = centre ? byCentreMonth[centre.id] : undefined;
+        return {
+          id: centre?.id || name,
+          name,
+          code: centre?.code || "",
+          capacity: centre?.capacity || 100,
+          occupancyData: [occ ? {
+            centreId: occ?.centreId ?? centre?.id ?? name,
+            u2Count: occ?.u2Count ?? 0,
+            o2Count: occ?.o2Count ?? 0,
+            total: occ?.total ?? 0,
+            date: occ?.date ?? startDate.toISOString(),
+          } : {
+            centreId: centre?.id ?? name,
+            u2Count: 0,
+            o2Count: 0,
+            total: 0,
+            date: startDate.toISOString(),
+          }],
+        };
+      });
+      setCentres(centresOrdered);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
-      console.error('Error fetching centres:', err);
+      console.error('Error fetching occupancy data:', err);
     } finally {
       setLoading(false);
     }
