@@ -147,6 +147,19 @@ export function OverdueInvoices() {
     );
   }
 
+  // Always enforce this order for rendering
+  const orderedCentreNames = [
+    "Papamoa Beach",
+    "The Boulevard",
+    "The Bach",
+    "Terrace Views",
+    "Livingstone Drive",
+    "West Dune"
+  ];
+  const centresOrdered = orderedCentreNames
+    .map(name => filteredCentres.find(c => c.name === name))
+    .filter((centre): centre is Centre => !!centre);
+
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-200 group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:border-blue-200/50">
       {/* Header with gradient background matching other sections */}
@@ -154,7 +167,7 @@ export function OverdueInvoices() {
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-white mb-1 drop-shadow-sm">Overdue Invoices Amount</h2>
-            <p className="text-blue-100">Live invoice data - automatically updated weekdays at 5am NZT</p>
+            <p className="text-blue-100">Automatically updated weekdays at 11am and 11pm NZT</p>
           </div>
           <div className="text-right">
             <div className="inline-flex items-center px-3 py-1 rounded-md bg-white/20 backdrop-blur-sm text-sm text-white mb-1">
@@ -165,7 +178,7 @@ export function OverdueInvoices() {
             </div>
             <div className="text-xs text-blue-100">
               Data sourced from Discover<br />
-              Auto-updated at 5am NZT, Mon-Fri
+              Auto-updated at 11am & 11pm NZT, Mon-Fri
             </div>
           </div>
         </div>
@@ -175,7 +188,7 @@ export function OverdueInvoices() {
       <div className="p-6">
         {/* Centres grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-          {filteredCentres.map((centre) => (
+          {centresOrdered.map((centre) => (
             <InvoiceCard key={centre.id} centre={centre} />
           ))}
         </div>

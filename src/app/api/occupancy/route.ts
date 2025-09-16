@@ -10,37 +10,40 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');
     const limit = searchParams.get('limit');
 
-  const where: Record<string, any> = {};
-    
+    const where: Record<string, any> = {};
     if (centreId) {
       where.centreId = centreId;
     }
-    
     if (startDate || endDate) {
       where.date = {};
       if (startDate) where.date.gte = new Date(startDate);
       if (endDate) where.date.lte = new Date(endDate);
     }
-
-    const occupancyData = await prisma.occupancyData.findMany({
-      where,
-      include: {
-        centre: {
-          select: {
-            name: true,
-            code: true,
+    console.log('Occupancy API Query:', { where, limit });
+    try {
+      const occupancyData = await prisma.occupancyData.findMany({
+        where,
+        include: {
+          centre: {
+            select: {
+              name: true,
+              code: true,
+            },
           },
         },
-      },
-      orderBy: { date: 'desc' },
-      take: limit ? parseInt(limit) : undefined,
-    });
-
-    return NextResponse.json(occupancyData);
+        orderBy: { date: 'desc' },
+        take: limit ? parseInt(limit) : undefined,
+      });
+      console.log('Occupancy API Result:', occupancyData);
+      return NextResponse.json(occupancyData);
+    } catch (queryError) {
+      console.error('Occupancy API Query Error:', queryError);
+      throw queryError;
+    }
   } catch (error) {
     console.error('Error fetching occupancy data:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch occupancy data' },
+      { error: 'Failed to fetch occupancy data', details: String(error) },
       { status: 500 }
     );
   }

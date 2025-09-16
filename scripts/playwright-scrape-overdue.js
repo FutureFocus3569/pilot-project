@@ -66,33 +66,82 @@ async function scrapeFutureChildrenCount(page, discoverApiId) {
   // Assumes already on the Child page after scraping 'Current'.
   // Go to the filter section and untick 'Current', tick 'Future'.
   // Wait for the filter section to be visible
-  await page.waitForSelector('label[for="Current"]');
-  // Untick 'Current' by clicking its label (if checked)
-  const currentChecked = await page.isChecked('input[type="checkbox"][name="Current"]');
-  if (currentChecked) {
-    await page.click('label[for="Current"]');
-    await page.waitForTimeout(500); // Wait for UI to update
+  // Always navigate to the Child page for this centre
+  const url = `https://discoverchildcare.co.nz/${discoverApiId}/Child`;
+  await page.goto(url);
+  await page.waitForSelector('input[type="checkbox"][name="Future"]', { timeout: 10000 });
+
+  // Untick all except Future
+  const filters = ['Current', 'Waiting', 'Enquiry', 'Past'];
+  for (const filter of filters) {
+    const selector = `input[type="checkbox"][name="${filter}"]`;
+    if (await page.isChecked(selector)) {
+      await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
+      await page.click(`label[for="${filter}"]`);
+      await page.waitForTimeout(300);
+    }
   }
-  // Tick 'Future' by clicking its label (if not checked)
-  const futureChecked = await page.isChecked('input[type="checkbox"][name="Future"]');
-  if (!futureChecked) {
+  // Tick Future if not checked
+  const futureSelector = 'input[type="checkbox"][name="Future"]';
+  if (!(await page.isChecked(futureSelector))) {
+    await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
     await page.click('label[for="Future"]');
-    await page.waitForTimeout(500); // Wait for UI to update
+    await page.waitForTimeout(500);
   }
-  // Wait for the info text to disappear (table reload) and then reappear
-  await page.waitForSelector('.dataTables_info', { state: 'detached', timeout: 5000 }).catch(() => {});
-  await page.waitForSelector('.dataTables_info', { timeout: 5000 });
+
+  // Log filter state for debugging
+  for (const filter of ['Current', 'Future', 'Waiting', 'Enquiry', 'Past']) {
+    const selector = `input[type="checkbox"][name="${filter}"]`;
+    const checked = await page.isChecked(selector);
+    console.log(`Future scrape: ${filter} checked?`, checked);
+  }
+
+  // Wait for the info text to disappear and reappear
+  await page.waitForSelector('.dataTables_info', { state: 'detached', timeout: 10000 }).catch(() => {});
+  let appeared = false;
+  try {
+    await page.waitForSelector('.dataTables_info', { timeout: 10000 });
+    appeared = true;
+  } catch (err) {
+    console.log('Future table did not appear, reloading and retrying...');
+    await page.reload();
+    await page.waitForSelector('input[type="checkbox"][name="Future"]', { timeout: 10000 });
+    // Untick all except Future again
+    for (const filter of filters) {
+      const selector = `input[type="checkbox"][name="${filter}"]`;
+      if (await page.isChecked(selector)) {
+        await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
+        await page.click(`label[for="${filter}"]`);
+        await page.waitForTimeout(300);
+      }
+    }
+    // Tick Future if not checked
+    if (!(await page.isChecked(futureSelector))) {
+      await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
+      await page.click('label[for="Future"]');
+      await page.waitForTimeout(500);
+    }
+    try {
+      await page.waitForSelector('.dataTables_info', { timeout: 10000 });
+      appeared = true;
+    } catch (err2) {
+      console.log('Future table still did not appear after reload. Returning 0.');
+      return 0;
+    }
+  }
   // Extract the total from the info text (with retry)
   let total = null;
-  for (let i = 0; i < 5; i++) {
-    total = await page.evaluate(() => {
-      const info = document.querySelector('.dataTables_info');
-      if (!info) return null;
-      const match = info.textContent && info.textContent.match(/of (\d+) entries/);
-      return match ? parseInt(match[1], 10) : null;
-    });
-    if (total !== null) break;
-    await page.waitForTimeout(500);
+  if (appeared) {
+    for (let i = 0; i < 5; i++) {
+      total = await page.evaluate(() => {
+        const info = document.querySelector('.dataTables_info');
+        if (!info) return null;
+        const match = info.textContent && info.textContent.match(/of (\d+) entries/);
+        return match ? parseInt(match[1], 10) : null;
+      });
+      if (total !== null) break;
+      await page.waitForTimeout(500);
+    }
   }
   return total;
 }
@@ -100,6 +149,8 @@ async function scrapeFutureChildrenCount(page, discoverApiId) {
 async function scrapeCurrentChildrenCount(page, discoverApiId) {
   const url = `https://discoverchildcare.co.nz/${discoverApiId}/Child`;
   await page.goto(url);
+    // Wait for any processing modal to disappear before interacting
+    await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
   // Ensure only 'Current' is checked (uncheck others)
   await page.waitForSelector('input[type="checkbox"][name="Current"]');
   // Uncheck all except 'Current'
@@ -107,13 +158,15 @@ async function scrapeCurrentChildrenCount(page, discoverApiId) {
   for (const filter of filters) {
     const selector = `input[type="checkbox"][name="${filter}"]`;
     if (await page.isChecked(selector)) {
-      await page.click(selector);
+      await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
+      await page.click(`label[for="${filter}"]`);
     }
   }
   // Make sure 'Current' is checked
   const currentSelector = 'input[type="checkbox"][name="Current"]';
   if (!(await page.isChecked(currentSelector))) {
-    await page.click(currentSelector);
+    await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
+    await page.click('label[for="Current"]');
   }
   // Wait for the table to update (wait for the info text to appear)
   await page.waitForSelector('.dataTables_info', { timeout: 5000 });
@@ -173,28 +226,60 @@ async function scrapeOverdueAmount(page, discoverApiId) {
 
 
 (async () => {
+
   const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage();
-  await page.goto(LOGIN_URL);
-  await page.fill('input[name="Email"]', USERNAME);
-  await page.fill('input[name="Password"]', PASSWORD);
-  await page.click('button[type="submit"]');
-  await page.waitForNavigation();
 
   // Scrape enrolment status counts for all centres
   for (const centre of CENTRES) {
+    const page = await browser.newPage();
     try {
+      await page.goto(LOGIN_URL);
+      await page.fill('input[name="Email"]', USERNAME);
+      await page.fill('input[name="Password"]', PASSWORD);
+      await page.click('button[type="submit"]');
+      await page.waitForNavigation();
+
       const currentCount = await scrapeCurrentChildrenCount(page, centre.discoverApiId);
-      console.log(`${centre.name} - Current Children: ${currentCount}`);
       const futureCount = await scrapeFutureChildrenCount(page, centre.discoverApiId);
-      console.log(`${centre.name} - Future Children: ${futureCount}`);
       const waitingCount = await scrapeWaitingChildrenCount(page);
-      console.log(`${centre.name} - Waiting Children: ${waitingCount}`);
       const enquiryCount = await scrapeEnquiryChildrenCount(page);
+
+      console.log(`${centre.name} - Current Children: ${currentCount}`);
+      console.log(`${centre.name} - Future Children: ${futureCount}`);
+      console.log(`${centre.name} - Waiting Children: ${waitingCount}`);
       console.log(`${centre.name} - Enquiry Children: ${enquiryCount}`);
+
+      // Save to OccupancyData for today
+      const today = new Date();
+      await prisma.occupancyData.upsert({
+        where: {
+          centreId_date: {
+            centreId: centre.id,
+            date: today,
+          },
+        },
+        update: {
+          currentChildren: currentCount,
+          futureChildren: futureCount,
+          waitingChildren: waitingCount,
+          enquiryChildren: enquiryCount,
+        },
+        create: {
+          centreId: centre.id,
+          date: today,
+          currentChildren: currentCount,
+          futureChildren: futureCount,
+          waitingChildren: waitingCount,
+          enquiryChildren: enquiryCount,
+          u2Count: 0,
+          o2Count: 0,
+          totalCount: 0,
+        },
+      });
     } catch (e) {
       console.error(`Error scraping ${centre.name}:`, e);
     }
+    await page.close();
   }
 
   // ...existing code for overdue invoices...

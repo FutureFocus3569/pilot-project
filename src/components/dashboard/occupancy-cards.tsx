@@ -261,6 +261,19 @@ export function OccupancyCards() {
     ? centres.filter(c => allowedCentreNames.includes(c.name))
     : centres;
 
+  // Always enforce this order for rendering
+  const orderedCentreNames = [
+    "Papamoa Beach",
+    "The Boulevard",
+    "The Bach",
+    "Terrace Views",
+    "Livingstone Drive",
+    "West Dune"
+  ];
+  const centresOrdered = orderedCentreNames
+    .map(name => filteredCentres.find(c => c.name === name))
+    .filter((centre): centre is Centre => !!centre);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -289,20 +302,11 @@ export function OccupancyCards() {
             </button>
           </div>
           
-          {/* Refresh Button */}
-          <button
-            onClick={fetchCentres}
-            disabled={loading}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white rounded-lg transition-colors duration-200"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
-          </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredCentres.map((centre) => {
+        {centresOrdered.map((centre) => {
         const currentOccupancy = getOccupancyForMonth(centre);
           return (
             <div key={centre.id} className="group bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:border-blue-200/50">

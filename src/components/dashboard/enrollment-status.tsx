@@ -83,94 +83,65 @@ export function EnrollmentStatus() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchEnrollmentData();
-  }, []);
 
   const fetchEnrollmentData = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // For now, using mock data based on the image
-      // Later we can replace this with real API calls
-      const mockData: Centre[] = [
-        {
-          id: "centre_001",
-          name: "Papamoa Beach",
-          enrollmentData: {
-            current: 83,
-            future: 4,
-            waiting: 11,
-            enquiry: 0
-          }
-        },
-        {
-          id: "centre_002", 
-          name: "The Boulevard",
-          enrollmentData: {
-            current: 64,
-            future: 4,
-            waiting: 2,
-            enquiry: 0
-          }
-        },
-        {
-          id: "centre_003",
-          name: "The Bach", 
-          enrollmentData: {
-            current: 49,
-            future: 0,
-            waiting: 7,
-            enquiry: 0
-          }
-        },
-        {
-          id: "centre_004",
-          name: "Terrace Views",
-          enrollmentData: {
-            current: 109,
-            future: 0,
-            waiting: 5,
-            enquiry: 0
-          }
-        },
-        {
-          id: "centre_005",
-          name: "Livingstone Drive",
-          enrollmentData: {
-            current: 60,
-            future: 0,
-            waiting: 4,
-            enquiry: 0
-          }
-        },
-        {
-          id: "centre_006",
-          name: "West Dune",
-          enrollmentData: {
-            current: 0,
-            future: 0,
-            waiting: 6,
-            enquiry: 0
-          }
+      // Fetch all centres
+      const centreRes = await fetch("/api/centres");
+      if (!centreRes.ok) throw new Error("Failed to fetch centres");
+      const centreList = await centreRes.json();
+      // Fetch latest occupancy data for all centres
+      const occRes = await fetch("/api/occupancy");
+      if (!occRes.ok) throw new Error("Failed to fetch occupancy data");
+      const occData = await occRes.json();
+      // Group by centreId, keep only latest record per centre
+      const latestByCentre: Record<string, any> = {};
+      occData.forEach((row: any) => {
+        const cid = row.centreId;
+        if (!latestByCentre[cid] || new Date(row.date) > new Date(latestByCentre[cid].date)) {
+          latestByCentre[cid] = row;
         }
+      });
+      // Always enforce this order for rendering
+      const orderedCentres = [
+        "Papamoa Beach",
+        "The Boulevard",
+        "The Bach",
+        "Terrace Views",
+        "Livingstone Drive",
+        "West Dune"
       ];
-
-      setCentres(mockData);
+      const centresOrdered: Centre[] = orderedCentres.map(name => {
+        const centre = centreList.find((c: any) => c.name === name);
+        const occ = centre ? latestByCentre[centre.id] : undefined;
+        return {
+          id: centre?.id || name,
+          name,
+          enrollmentData: {
+            current: occ?.currentChildren ?? 0,
+            future: occ?.futureChildren ?? 0,
+            waiting: occ?.waitingChildren ?? 0,
+            enquiry: occ?.enquiryChildren ?? 0,
+          },
+        };
+      });
+      setCentres(centresOrdered);
     } catch (err) {
-      console.error('Error fetching enrollment data:', err);
-      setError('Failed to load enrollment data');
+      console.error("Error fetching enrollment data:", err);
+      setError("Failed to load enrollment data");
     } finally {
       setLoading(false);
     }
   };
 
-  // Filter to only allowed centres based on centrePermissions
-  const allowedCentreNames = user?.centrePermissions?.map(cp => cp.centreName) || [];
-  const filteredCentres = allowedCentreNames.length > 0
-    ? centres.filter(c => allowedCentreNames.includes(c.name))
-    : centres;
+  useEffect(() => {
+    fetchEnrollmentData();
+  }, []);
+
+  // Always show all six centres in the specified order
+  const filteredCentres = centres;
 
   if (loading) {
     return (
@@ -206,7 +177,7 @@ export function EnrollmentStatus() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Enrolment Status</h2>
           <p className="text-sm text-gray-600 mt-1">
-            Live enrolment data - automatically updated weekdays at 5am NZT
+              Live enrolment data - automatically updated weekdays at 11pm NZT
           </p>
         </div>
         
@@ -217,14 +188,14 @@ export function EnrollmentStatus() {
             Data sourced from Discover
           </div>
           <div className="text-xs bg-gray-100 px-2 py-1 rounded hidden xl:block">
-            Auto-updated at 5am NZT, Mon-Fri
+              Auto-updated at 11pm NZT, Mon-Fri
           </div>
         </div>
       </div>
 
-      {/* Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCentres.map((centre) => (
+      {/* Cards Grid - always render in specified order, mobile friendly */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {centres.map((centre) => (
           <EnrollmentCard key={centre.id} centre={centre} />
         ))}
       </div>

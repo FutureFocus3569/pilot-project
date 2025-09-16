@@ -84,15 +84,19 @@ model Centre {
 }
 
 model OccupancyData {
-  id         String   @id @default(cuid())
-  centreId   String
-  date       DateTime
-  u2Count    Int
-  o2Count    Int
-  totalCount Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  centre     Centre   @relation(fields: [centreId], references: [id])
+  id              String   @id @default(cuid())
+  centreId        String
+  date            DateTime
+  u2Count         Int
+  o2Count         Int
+  totalCount      Int
+  currentChildren Int      @default(0)
+  futureChildren  Int      @default(0)
+  waitingChildren Int      @default(0)
+  enquiryChildren Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  centre          Centre   @relation(fields: [centreId], references: [id])
 
   @@unique([centreId, date])
   @@map("occupancy_data")
