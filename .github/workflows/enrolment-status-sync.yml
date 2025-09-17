@@ -4,8 +4,10 @@ on:
   schedule:
     # One-off run for 1:30pm NZT (1:30am UTC) on 16th September 2025
     - cron: '30 1 16 9 *' # 1:30 UTC, 16th September
-    # Regular schedule: 11pm NZT is 12pm UTC (NZT is UTC+12, adjust for daylight savings if needed)
+  # Regular schedule: 11pm NZT is 12pm UTC (NZT is UTC+12, adjust for daylight savings if needed)
+  schedule:
     - cron: '0 12 * * 1-5' # 12:00 UTC, Mon-Fri
+    - cron: '0 2 * * 1-5'  # 2:00 UTC, Mon-Fri
 
 jobs:
   sync-enrolment-status:
