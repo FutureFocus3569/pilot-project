@@ -83,9 +83,10 @@ export function OccupancyCards() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Month navigation state - default to latest month with data (June 2025)
-  const [selectedYear, setSelectedYear] = useState(2025);
-  const [selectedMonth, setSelectedMonth] = useState(6); // June
+  // Month navigation state - default to current month and year
+  const now = new Date();
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1); // JS months are 0-based
 
   // Helper function to format month/year for display
   const formatMonthYear = (month: number, year: number) => {
@@ -93,36 +94,24 @@ export function OccupancyCards() {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
+  // Helper function to get month string in "YYYY-MM-01" format
+  const getMonthString = (year: number, month: number) => {
+    return `${year}-${String(month).padStart(2, '0')}-01`;
+  };
+
   // Helper function to get occupancy data for selected month
-  interface OccupancyData {
-  u2Count: number;
-  o2Count: number;
-  total: number;
-  date: string;
-  }
-  interface Centre {
-    id: string;
-    name: string;
-    code: string;
-    capacity: number;
-    occupancyData?: OccupancyData[];
-  }
   const getOccupancyForMonth = (centre: Centre) => {
-    const targetYear = selectedYear;
-    const targetMonth = selectedMonth;
+    const targetMonthString = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`; // "YYYY-MM"
     const occupancyData = centre.occupancyData?.find((data: any) => {
-      const dataDate = new Date(data.date);
-      return (
-        data.centreId === centre.id &&
-        dataDate.getFullYear() === targetYear &&
-        dataDate.getMonth() + 1 === targetMonth
-      );
+      // Match by year and month only
+      const dataMonth = (data.date ?? '').slice(0, 7); // "YYYY-MM"
+      return dataMonth === targetMonthString;
     });
     if (occupancyData) {
       return {
-        u2Count: occupancyData.u2Count,
-        o2Count: occupancyData.o2Count,
-        totalCount: occupancyData.total,
+        u2Count: occupancyData.u2Count ?? 0,
+        o2Count: occupancyData.o2Count ?? 0,
+        totalCount: occupancyData.totalCount ?? 0,
         date: occupancyData.date,
       };
     }
@@ -130,7 +119,7 @@ export function OccupancyCards() {
       u2Count: 0,
       o2Count: 0,
       totalCount: 0,
-      date: `${targetYear}-${targetMonth.toString().padStart(2, '0')}-01`,
+      date: `${targetMonthString}-01`,
     };
   };
 
@@ -154,12 +143,13 @@ export function OccupancyCards() {
   };
 
   // Check if we can navigate (based on available data range: Jan 2024 - June 2025)
+  // Check if we can navigate (based on available data range: Jan 2024 - Aug 2025)
   const canGoToPrevious = () => {
     return !(selectedYear === 2024 && selectedMonth === 1);
   };
 
   const canGoToNext = () => {
-    return !(selectedYear === 2025 && selectedMonth === 6);
+    return !(selectedYear === 2025 && selectedMonth === 8);
   };
 
   const fetchCentres = async () => {
@@ -170,62 +160,63 @@ export function OccupancyCards() {
       const centreRes = await fetch("/api/centres");
       if (!centreRes.ok) throw new Error("Failed to fetch centres");
       const centreList = await centreRes.json();
-      // Calculate start and end date for selected month
-      const startDate = new Date(selectedYear, selectedMonth - 1, 1);
-      const endDate = new Date(selectedYear, selectedMonth, 0, 23, 59, 59, 999);
-      // Fetch occupancy data for selected month
-      const occRes = await fetch(`/api/occupancy?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
-      if (!occRes.ok) throw new Error("Failed to fetch occupancy data");
+      // Use "YYYY-MM-01" for API query
+      const apiMonthString = getMonthString(selectedYear, selectedMonth); // "YYYY-MM-01"
+      // Fetch centre occupancy data for selected month from correct API
+      const occRes = await fetch(`/api/centre-occupancy?month=${apiMonthString}`);
+      if (!occRes.ok) throw new Error("Failed to fetch centre occupancy data");
       const occData = await occRes.json();
-      // Group by centreId, keep only latest record per centre in month
+      // Group by centreId and filter by selected month/year
       type OccRow = {
         centreId: string;
-        u2Count: number;
-        o2Count: number;
+        u2: number;
+        o2: number;
         total: number;
-        date: string;
+        month: string;
       };
-      // Group records by centreId and filter by selected month/year
       const byCentreMonth: Record<string, OccRow | undefined> = {};
       (occData as OccRow[]).forEach((row: OccRow) => {
-        const cid = row.centreId;
-        const dataDate = new Date(row.date);
-        if (
-          dataDate.getFullYear() === selectedYear &&
-          dataDate.getMonth() + 1 === selectedMonth
-        ) {
-          byCentreMonth[cid] = row;
+        const rowMonthPrefix = (row.month ?? '').slice(0, 7); // "YYYY-MM"
+        const targetMonthPrefix = apiMonthString.slice(0, 7); // "YYYY-MM"
+        if (rowMonthPrefix === targetMonthPrefix) {
+          byCentreMonth[row.centreId] = {
+            centreId: row.centreId,
+            u2: row.u2 ?? 0,
+            o2: row.o2 ?? 0,
+            total: row.total ?? 0,
+            month: row.month
+          };
         }
       });
       // Always enforce this order for rendering
-      const orderedCentres = [
-        "Papamoa Beach",
-        "The Boulevard",
-        "The Bach",
-        "Terrace Views",
-        "Livingstone Drive",
-        "West Dune"
+      const orderedCentreCodes = [
+        "papamoa-beach",
+        "the-boulevard",
+        "the-bach",
+        "terrace-views",
+        "livingstone-drive",
+        "west-dune"
       ];
-      const centresOrdered = orderedCentres.map(name => {
-  const centre = centreList.find((c: any) => c.name === name);
-  const occ = centre ? byCentreMonth[centre.id] : undefined;
+      const centresOrdered = orderedCentreCodes.map(code => {
+        const centre = centreList.find((c: any) => c.code === code);
+        const occ = centre ? byCentreMonth[code] : undefined;
+        // Use "YYYY-MM-01" for fallback date
+        const fallbackDate = apiMonthString;
         return {
-          id: centre?.id || name,
-          name,
-          code: centre?.code || "",
+          id: centre?.id || code,
+          name: centre?.name || code,
+          code: centre?.code || code,
           capacity: centre?.capacity || 100,
           occupancyData: [occ ? {
-            centreId: occ?.centreId ?? centre?.id ?? name,
-            u2Count: occ?.u2Count ?? 0,
-            o2Count: occ?.o2Count ?? 0,
-            total: occ?.total ?? 0,
-            date: occ?.date ?? startDate.toISOString(),
+            u2Count: occ.u2 ?? 0,
+            o2Count: occ.o2 ?? 0,
+            totalCount: occ.total ?? 0,
+            date: occ.month,
           } : {
-            centreId: centre?.id ?? name,
             u2Count: 0,
             o2Count: 0,
-            total: 0,
-            date: startDate.toISOString(),
+            totalCount: 0,
+            date: fallbackDate,
           }],
         };
       });
@@ -238,32 +229,11 @@ export function OccupancyCards() {
     }
   };
 
-  // Generate mock occupancy data for a centre
-  const generateOccupancyData = (capacity: number) => {
-    const data = [];
-    const startDate = new Date(2024, 0, 1); // January 2024
-    const endDate = new Date(2025, 11, 31); // December 2025
-    
-    for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
-      const baseOccupancy = Math.floor(capacity * (0.7 + Math.random() * 0.25)); // 70-95% occupancy
-      const u2Count = Math.floor(baseOccupancy * (0.3 + Math.random() * 0.2)); // 30-50% under 2
-      const o2Count = baseOccupancy - u2Count;
-      
-      data.push({
-        u2Count,
-        o2Count,
-        totalCount: baseOccupancy,
-        date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
-      });
-    }
-    
-    return data;
-  };
-
   useEffect(() => {
     fetchCentres();
   }, []);
 
+  // Top-level returns for loading and error
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -320,18 +290,25 @@ export function OccupancyCards() {
     ? centres.filter(c => allowedCentreNames.includes(c.name))
     : centres;
 
-  // Always enforce this order for rendering
-  const orderedCentreNames = [
-    "Papamoa Beach",
-    "The Boulevard",
-    "The Bach",
-    "Terrace Views",
-    "Livingstone Drive",
-    "West Dune"
+  // Always enforce this order for rendering (use codes for mapping)
+  const orderedCentreCodes = [
+    "papamoa-beach",
+    "the-boulevard",
+    "the-bach",
+    "terrace-views",
+    "livingstone-drive",
+    "west-dune"
   ];
-  const centresOrdered = orderedCentreNames
-    .map(name => filteredCentres.find(c => c.name === name))
-    .filter((centre): centre is Centre => !!centre);
+  const centresOrdered = orderedCentreCodes.map(code => {
+    const centre = filteredCentres.find(c => c.code === code);
+    return centre || {
+      id: code,
+      name: code,
+      code,
+      capacity: 100,
+      occupancyData: [],
+    };
+  });
 
   return (
     <div className="space-y-6">
@@ -386,7 +363,6 @@ export function OccupancyCards() {
                       label="U2"
                     />
                   </div>
-
                   {/* Over 2 */}
                   <div className="text-center">
                     <DonutChart
@@ -396,7 +372,6 @@ export function OccupancyCards() {
                       label="O2"
                     />
                   </div>
-
                   {/* Total */}
                   <div className="text-center">
                     <DonutChart

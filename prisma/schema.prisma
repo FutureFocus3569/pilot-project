@@ -1,3 +1,13 @@
+model CentreOccupancy {
+  id        String   @id @default(cuid())
+  centreId  String
+  month     DateTime // matches Supabase and CSV
+  u2        Int
+  o2        Int
+  total     Int
+  centre    Centre   @relation(fields: [centreId], references: [id])
+  @@map("centre_occupancy")
+}
 generator client {
   provider = "prisma-client-js"
 }
@@ -77,6 +87,7 @@ model Centre {
   centreBudgetCategories CentreBudgetCategory[]
   organization           Organization           @relation(fields: [organizationId], references: [id])
   occupancyData          OccupancyData[]
+  centreOccupancies      CentreOccupancy[]
   staffHours             StaffHours[]
   userPermissions        UserCentrePermission[]
 

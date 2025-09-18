@@ -45,21 +45,8 @@ export default function LoginPage() {
           <div className="bg-gradient-to-r from-blue-500 to-teal-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
-          <p className="text-gray-600 mt-2">Sign in to your childcare dashboard</p>
-        </div>
-
-        {/* Demo Users */}
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm font-medium text-gray-700 mb-3">Master Account:</p>
-          <div className="space-y-2">
-            <button
-              onClick={() => demoLogin('courtney@futurefocus.co.nz', '1234')}
-              className="w-full text-left text-xs px-3 py-2 bg-purple-100 text-purple-800 rounded hover:bg-purple-200 transition-colors"
-            >
-              <strong>Master:</strong> courtney@futurefocus.co.nz
-            </button>
-          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Haere mai!</h1>
+          <p className="text-gray-600 mt-2"></p>
         </div>
 
         {/* Login Form */}

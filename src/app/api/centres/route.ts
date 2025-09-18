@@ -4,42 +4,42 @@ import { prisma } from "@/lib/prisma";
 // Mock centres data for development - Updated with correct centre names
 const mockCentres = [
   {
-    id: 'centre_papamoa',
+    id: 'papamoa-beach',
     name: 'Papamoa Beach',
     code: 'CC1',
     address: '123 Papamoa Beach Road, Papamoa',
     capacity: 50
   },
   {
-    id: 'centre_boulevard',
+    id: 'the-boulevard',
     name: 'The Boulevard',
     code: 'CC2',
     address: '456 The Boulevard, Mount Maunganui',
     capacity: 40
   },
   {
-    id: 'centre_bach',
+    id: 'the-bach',
     name: 'The Bach',
     code: 'CC3',
     address: '789 Bach Avenue, Tauranga',
     capacity: 60
   },
   {
-    id: 'centre_terrace',
+    id: 'terrace-views',
     name: 'Terrace Views',
     code: 'CC4',
     address: '321 Terrace Road, Tauranga',
     capacity: 35
   },
   {
-    id: 'centre_livingstone',
+    id: 'livingstone-drive',
     name: 'Livingstone Drive',
     code: 'CC5',
     address: '654 Livingstone Drive, Tauranga',
     capacity: 45
   },
   {
-    id: 'centre_westdune',
+    id: 'west-dune',
     name: 'West Dune',
     code: 'CC6',
     address: '987 West Dune Road, Tauranga',
