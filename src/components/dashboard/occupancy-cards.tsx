@@ -78,15 +78,19 @@ function DonutChart({ value, total, size = 80, strokeWidth = 8, color, label }: 
 }
 
 export function OccupancyCards() {
+  // Default to August 2025 if current date is after August 2025, else use current month
+  const now = new Date();
+  const defaultYear = (now.getFullYear() > 2025 || (now.getFullYear() === 2025 && now.getMonth() + 1 > 8)) ? 2025 : now.getFullYear();
+  const defaultMonth = (now.getFullYear() > 2025 || (now.getFullYear() === 2025 && now.getMonth() + 1 > 8)) ? 8 : now.getMonth() + 1;
+  const [selectedYear, setSelectedYear] = useState(defaultYear);
+  const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
+  useEffect(() => {
+    fetchCentres();
+  }, [selectedMonth, selectedYear]);
   const { user } = useAuth();
   const [centres, setCentres] = useState<Centre[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Month navigation state - default to current month and year
-  const now = new Date();
-  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1); // JS months are 0-based
 
   // Helper function to format month/year for display
   const formatMonthYear = (month: number, year: number) => {
@@ -101,18 +105,24 @@ export function OccupancyCards() {
 
   // Helper function to get occupancy data for selected month
   const getOccupancyForMonth = (centre: Centre) => {
+    // API returns date as YYYY-MM-DDTHH:mm:ss. Match by year and month only
     const targetMonthString = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`; // "YYYY-MM"
     const occupancyData = centre.occupancyData?.find((data: any) => {
-      // Match by year and month only
+      // Accept both YYYY-MM-DD and YYYY-MM-DDTHH:mm:ss formats
       const dataMonth = (data.date ?? '').slice(0, 7); // "YYYY-MM"
       return dataMonth === targetMonthString;
     });
     if (occupancyData) {
+      // Use type assertion to access API keys
+      const occ = occupancyData as any;
+      const u2 = typeof occ.u2 === 'number' ? occ.u2 : (typeof occ.u2Count === 'number' ? occ.u2Count : 0);
+      const o2 = typeof occ.o2 === 'number' ? occ.o2 : (typeof occ.o2Count === 'number' ? occ.o2Count : 0);
+      const total = typeof occ.total === 'number' ? occ.total : (typeof occ.totalCount === 'number' ? occ.totalCount : 0);
       return {
-        u2Count: occupancyData.u2Count ?? 0,
-        o2Count: occupancyData.o2Count ?? 0,
-        totalCount: occupancyData.totalCount ?? 0,
-        date: occupancyData.date,
+        u2Count: u2,
+        o2Count: o2,
+        totalCount: total,
+        date: occ.date,
       };
     }
     return {
@@ -145,11 +155,13 @@ export function OccupancyCards() {
   // Check if we can navigate (based on available data range: Jan 2024 - June 2025)
   // Check if we can navigate (based on available data range: Jan 2024 - Aug 2025)
   const canGoToPrevious = () => {
-    return !(selectedYear === 2024 && selectedMonth === 1);
+  // Only allow navigation from Jan 2025
+  return !(selectedYear === 2025 && selectedMonth === 1);
   };
 
   const canGoToNext = () => {
-    return !(selectedYear === 2025 && selectedMonth === 8);
+  // Only allow navigation up to Aug 2025
+  return !(selectedYear === 2025 && selectedMonth === 8);
   };
 
   const fetchCentres = async () => {
@@ -160,12 +172,14 @@ export function OccupancyCards() {
       const centreRes = await fetch("/api/centres");
       if (!centreRes.ok) throw new Error("Failed to fetch centres");
       const centreList = await centreRes.json();
+      console.log('Fetched centreList:', centreList);
       // Use "YYYY-MM-01" for API query
       const apiMonthString = getMonthString(selectedYear, selectedMonth); // "YYYY-MM-01"
       // Fetch centre occupancy data for selected month from correct API
       const occRes = await fetch(`/api/centre-occupancy?month=${apiMonthString}`);
       if (!occRes.ok) throw new Error("Failed to fetch centre occupancy data");
       const occData = await occRes.json();
+      console.log('Fetched occData:', occData);
       // Group by centreId and filter by selected month/year
       type OccRow = {
         centreId: string;
@@ -188,8 +202,9 @@ export function OccupancyCards() {
           };
         }
       });
+      console.log('Mapped byCentreMonth:', byCentreMonth);
       // Always enforce this order for rendering
-      const orderedCentreCodes = [
+      const localOrderedCentreCodes = [
         "papamoa-beach",
         "the-boulevard",
         "the-bach",
@@ -197,15 +212,14 @@ export function OccupancyCards() {
         "livingstone-drive",
         "west-dune"
       ];
-      const centresOrdered = orderedCentreCodes.map(code => {
-        const centre = centreList.find((c: any) => c.code === code);
-        const occ = centre ? byCentreMonth[code] : undefined;
-        // Use "YYYY-MM-01" for fallback date
+      const localCentresOrdered = localOrderedCentreCodes.map(code => {
+        const centre = centreList.find((c: any) => c.id === code);
+        const occ = byCentreMonth[code];
         const fallbackDate = apiMonthString;
         return {
-          id: centre?.id || code,
+          id: code,
           name: centre?.name || code,
-          code: centre?.code || code,
+          code: code,
           capacity: centre?.capacity || 100,
           occupancyData: [occ ? {
             u2Count: occ.u2 ?? 0,
@@ -220,68 +234,12 @@ export function OccupancyCards() {
           }],
         };
       });
-      setCentres(centresOrdered);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load data');
-      console.error('Error fetching occupancy data:', err);
-    } finally {
-      setLoading(false);
+      console.log('Final centresOrdered:', localCentresOrdered);
+      setCentres(localCentresOrdered);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to load data');
+      console.error('Error fetching occupancy data:', error);
     }
-  };
-
-  useEffect(() => {
-    fetchCentres();
-  }, []);
-
-  // Top-level returns for loading and error
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <div key={index} className="bg-white rounded-xl border border-gray-200 overflow-hidden animate-pulse shadow-lg">
-            <div className="bg-gradient-to-r from-blue-500 to-teal-500 px-4 py-3">
-              <div className="h-4 bg-blue-200 rounded w-24"></div>
-            </div>
-            <div className="p-4">
-              <div className="grid grid-cols-3 gap-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex flex-col items-center space-y-2">
-                    <div className="h-20 w-20 bg-gray-200 rounded-full"></div>
-                    <div className="h-3 bg-gray-200 rounded w-8"></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <div className="flex items-center space-x-3">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-red-800">Error loading centres</h3>
-            <p className="text-sm text-red-700 mt-1">{error}</p>
-          </div>
-        </div>
-        <div className="mt-4">
-          <button
-            onClick={fetchCentres}
-            className="bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
   }
 
   // Filter to only allowed centres based on centrePermissions
@@ -324,11 +282,9 @@ export function OccupancyCards() {
             >
               <ChevronLeft className="h-4 w-4 text-gray-600" />
             </button>
-            
             <span className="text-sm font-medium text-gray-900 min-w-[140px] text-center">
               {formatMonthYear(selectedMonth, selectedYear)}
             </span>
-            
             <button
               onClick={goToNextMonth}
               disabled={!canGoToNext()}
@@ -337,13 +293,12 @@ export function OccupancyCards() {
               <ChevronRight className="h-4 w-4 text-gray-600" />
             </button>
           </div>
-          
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {centresOrdered.map((centre) => {
-        const currentOccupancy = getOccupancyForMonth(centre);
+          const currentOccupancy = getOccupancyForMonth(centre);
           return (
             <div key={centre.id} className="group bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:border-blue-200/50">
               {/* Header with centre name and navigation controls */}

@@ -1,6 +1,3 @@
-    if ('id' in rawRow) {
-      console.log('Row still has id:', rawRow.id);
-    }
 import fs from 'fs';
 import path from 'path';
 import { parse } from 'csv-parse/sync';
