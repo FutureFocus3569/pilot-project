@@ -1,10 +1,18 @@
 name: Enrolment Status Sync
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.ts'
+      - '**.tsx'
+      - 'scripts/**'
+      - '.github/workflows/enrolment-status-sync.yml'
+  workflow_dispatch:
   schedule:
-    # 11pm NZT is 12pm UTC (NZT is UTC+12, adjust for daylight savings if needed)
     - cron: '0 12 * * 1-5' # 12:00 UTC, Mon-Fri
-
+    - cron: '0 2 16 9 *' # 2:00am UTC, 16 Sep 2025
 jobs:
   sync-enrolment-status:
     runs-on: ubuntu-latest
@@ -15,9 +23,13 @@ jobs:
         with:
           node-version: '20'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: List scripts directory
+        run: ls -l scripts
       - name: Run Playwright script
-        run: node childcare-dashboard/scripts/playwright-scrape-overdue.js
+        run: node ./scripts/playwright-scrape-enrolment-status.js
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DISCOVER_USERNAME: ${{ secrets.DISCOVER_USERNAME }}
