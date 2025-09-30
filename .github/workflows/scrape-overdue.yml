@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: '20'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright script
@@ -25,4 +25,4 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DISCOVER_USERNAME: ${{ secrets.DISCOVER_USERNAME }}
           DISCOVER_PASSWORD: ${{ secrets.DISCOVER_PASSWORD }}
-        run: node scripts/playwright-scrape-overdue.js
+        run: node scripts/playwright-scrape-overdue-invoices.js
