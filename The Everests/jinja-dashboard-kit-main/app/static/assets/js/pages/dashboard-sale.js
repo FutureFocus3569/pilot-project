@@ -1,99 +1,182 @@
+// Fallback sample data for enrolment status
+const fallbackEnrolmentData = [
+    { centre_name: 'Papamoa Beach', current: 83, future: 4, waiting: 11, enquiry: 0 },
+    { centre_name: 'The Boulevard', current: 72, future: 6, waiting: 9, enquiry: 1 },
+    { centre_name: 'The Bach', current: 65, future: 8, waiting: 7, enquiry: 2 },
+    { centre_name: 'Terrace Views', current: 80, future: 3, waiting: 5, enquiry: 0 },
+    { centre_name: 'Livingstone Drive', current: 77, future: 5, waiting: 6, enquiry: 1 },
+    { centre_name: 'West Dune', current: 69, future: 7, waiting: 8, enquiry: 0 }
+];
 
-'use strict';
+function renderEnrolmentStatus(data) {
+    const row = document.getElementById('enrolment-status-row');
+    if (!row) return;
+    row.innerHTML = '';
+    data.forEach((enrol, idx) => {
+        const card = document.createElement('div');
+        card.className = 'col-md-6 col-lg-4 mb-4';
+        card.innerHTML = `
+            <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                    <h5 class="m-0 p-2" style="color:#111;">${enrol.centre_name}</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                    <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                        <div class="col p-0">
+                            <span style="font-size:1.3em;color:#43a047;font-weight:600;">${enrol.current}</span><br>
+                            <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                        </div>
+                        <div class="col p-0">
+                            <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">${enrol.future}</span><br>
+                            <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                        </div>
+                        <div class="col p-0">
+                            <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">${enrol.waiting}</span><br>
+                            <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                        </div>
+                        <div class="col p-0">
+                            <span style="font-size:1.3em;color:#ff9800;font-weight:600;">${enrol.enquiry}</span><br>
+                            <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        row.appendChild(card);
+    });
+}
+
+// On DOMContentLoaded, render fallback enrolment status
+document.addEventListener('DOMContentLoaded', function () {
+    renderEnrolmentStatus(fallbackEnrolmentData);
+});
+
+"use strict";
 document.addEventListener("DOMContentLoaded", function () {
-    console.log('ApexCharts:', typeof ApexCharts !== 'undefined' ? 'loaded' : 'NOT loaded');
-    setTimeout(function () {
-        floatchart()
-    }, 700);
-    // [ campaign-scroll ] start
-    var px = new PerfectScrollbar('.feed-scroll', {
-        wheelSpeed: .5,
-        swipeEasing: 0,
-        wheelPropagation: 1,
-        minScrollbarLength: 40,
-    });
-    var px = new PerfectScrollbar('.pro-scroll', {
-        wheelSpeed: .5,
-        swipeEasing: 0,
-        wheelPropagation: 1,
-        minScrollbarLength: 40,
-    });
-    // [ campaign-scroll ] end
 
-    // Render three donuts for every card
-    for (let i = 1; i <= 6; i++) {
-        // Center donut (main)
-        var centerEl = document.querySelector(`#donut-${i}`);
-        var centerFallback = document.querySelector(`#donut-${i}-fallback`);
-        console.log('Rendering center donut for card', i, centerEl);
-        if (centerEl) {
-            var centerOptions = {
-                chart: { type: 'donut', width: 120, height: 120 },
-                series: [60, 40],
-                labels: ['Occupied', 'Vacant'],
+
+
+    // Fetch occupancy data from Django API
+    async function fetchOccupancyData(monthYear) {
+        try {
+            const response = await fetch(`/api/occupancy/?month_year=${encodeURIComponent(monthYear)}`);
+            if (!response.ok) throw new Error('Network response was not ok');
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching occupancy data:', error);
+            return [];
+        }
+    }
+
+    // Helper to get the current month in MM-YYYY format
+    function getCurrentMonthYear() {
+        const now = new Date();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const yyyy = now.getFullYear();
+        return `${mm}-${yyyy}`;
+    }
+
+    function calcAvg(arr, key) {
+        if (!arr.length) return '--';
+        const sum = arr.reduce((acc, x) => acc + (x[key] || 0), 0);
+        return Math.round((sum / arr.length) * 10) / 10;
+    }
+
+
+// Fallback sample data for design/testing
+const fallbackOccupancyData = [
+    { centre_name: 'Papamoa Beach', month_year: '07-2025', u2: 85, o2: 90, total: 88 },
+    { centre_name: 'The Boulevard', month_year: '07-2025', u2: 78, o2: 82, total: 80 },
+    { centre_name: 'The Bach', month_year: '07-2025', u2: 92, o2: 95, total: 94 },
+    { centre_name: 'Terrace Views', month_year: '07-2025', u2: 80, o2: 85, total: 83 },
+    { centre_name: 'Livingstone Drive', month_year: '07-2025', u2: 88, o2: 91, total: 90 },
+    { centre_name: 'West Dune', month_year: '07-2025', u2: 75, o2: 80, total: 78 }
+];
+
+async function renderOccupancy(monthYear) {
+    const row = document.getElementById('monthly-occupancy-row');
+    row.innerHTML = '';
+    let data = await fetchOccupancyData(monthYear);
+    // Use fallback if no data returned
+    if (!Array.isArray(data) || data.length === 0) {
+        data = fallbackOccupancyData;
+    }
+    let avgU2 = calcAvg(data, 'u2');
+    let avgO2 = calcAvg(data, 'o2');
+    let avgTotal = calcAvg(data, 'total');
+    document.getElementById('avg-u2').innerText = `U2: ${avgU2 === undefined || isNaN(avgU2) ? '-' : avgU2}`;
+    document.getElementById('avg-o2').innerText = `O2: ${avgO2 === undefined || isNaN(avgO2) ? '-' : avgO2}`;
+    document.getElementById('avg-total').innerText = `Total: ${avgTotal === undefined || isNaN(avgTotal) ? '-' : avgTotal}`;
+    data.forEach((occ, idx) => {
+        const card = document.createElement('div');
+        card.className = 'col-md-4';
+        card.innerHTML = `
+            <div class="card p-3 mb-3">
+                <h5 class="mb-2">${occ.centre_name}</h5>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div id="donut-u2-${idx}"></div>
+                    <div id="donut-o2-${idx}"></div>
+                    <div id="donut-total-${idx}"></div>
+                </div>
+                <div class="mt-2 small text-muted">Month: ${occ.month_year || '-'}</div>
+            </div>
+        `;
+        row.appendChild(card);
+
+        // Render U2 donut or fallback
+        if (occ.u2 === undefined || isNaN(occ.u2)) {
+            document.querySelector(`#donut-u2-${idx}`).innerHTML = '<span style="font-size:2em;">-</span>';
+        } else {
+            new ApexCharts(document.querySelector(`#donut-u2-${idx}`), {
+                chart: { type: 'donut', width: 80, height: 80 },
+                series: [occ.u2, 100 - occ.u2],
+                labels: ['U2 Occupied', 'Vacant'],
                 colors: ['#1de9b6', '#e0e0e0'],
                 dataLabels: { enabled: false },
                 legend: { show: false },
                 plotOptions: { pie: { donut: { size: '70%' } } }
-            };
-            var donutCenter = new ApexCharts(centerEl, centerOptions);
-            donutCenter.render().then(function() {
-                if (centerFallback) centerFallback.style.display = 'none';
-            }).catch(function() {
-                if (centerFallback) centerFallback.style.display = 'block';
-            });
-        } else if (centerFallback) {
-            centerFallback.style.display = 'block';
+            }).render();
         }
-
-        // Left donut
-        var leftEl = document.querySelector(`#donut-${i}-left`);
-        var leftFallback = document.querySelector(`#donut-${i}-left-fallback`);
-        console.log('Rendering left donut for card', i, leftEl);
-        if (leftEl) {
-            var leftOptions = {
-                chart: { type: 'donut', width: 100, height: 100 },
-                series: [30, 70],
-                labels: ['Occupied', 'Vacant'],
+        // Render O2 donut or fallback
+        if (occ.o2 === undefined || isNaN(occ.o2)) {
+            document.querySelector(`#donut-o2-${idx}`).innerHTML = '<span style="font-size:2em;">-</span>';
+        } else {
+            new ApexCharts(document.querySelector(`#donut-o2-${idx}`), {
+                chart: { type: 'donut', width: 80, height: 80 },
+                series: [occ.o2, 100 - occ.o2],
+                labels: ['O2 Occupied', 'Vacant'],
                 colors: ['#1dc4e9', '#e0e0e0'],
                 dataLabels: { enabled: false },
                 legend: { show: false },
                 plotOptions: { pie: { donut: { size: '70%' } } }
-            };
-            var donutLeft = new ApexCharts(leftEl, leftOptions);
-            donutLeft.render().then(function() {
-                if (leftFallback) leftFallback.style.display = 'none';
-            }).catch(function() {
-                if (leftFallback) leftFallback.style.display = 'block';
-            });
-        } else if (leftFallback) {
-            leftFallback.style.display = 'block';
+            }).render();
         }
-
-        // Right donut
-        var rightEl = document.querySelector(`#donut-${i}-right`);
-        var rightFallback = document.querySelector(`#donut-${i}-right-fallback`);
-        console.log('Rendering right donut for card', i, rightEl);
-        if (rightEl) {
-            var rightOptions = {
-                chart: { type: 'donut', width: 100, height: 100 },
-                series: [80, 20],
-                labels: ['Occupied', 'Vacant'],
+        // Render Total donut or fallback
+        if (occ.total === undefined || isNaN(occ.total)) {
+            document.querySelector(`#donut-total-${idx}`).innerHTML = '<span style="font-size:2em;">-</span>';
+        } else {
+            new ApexCharts(document.querySelector(`#donut-total-${idx}`), {
+                chart: { type: 'donut', width: 80, height: 80 },
+                series: [occ.total, 100 - occ.total],
+                labels: ['Total Occupied', 'Vacant'],
                 colors: ['#00b894', '#e0e0e0'],
                 dataLabels: { enabled: false },
                 legend: { show: false },
                 plotOptions: { pie: { donut: { size: '70%' } } }
-            };
-            var donutRight = new ApexCharts(rightEl, rightOptions);
-            donutRight.render().then(function() {
-                if (rightFallback) rightFallback.style.display = 'none';
-            }).catch(function() {
-                if (rightFallback) rightFallback.style.display = 'block';
-            });
-        } else if (rightFallback) {
-            rightFallback.style.display = 'block';
+            }).render();
         }
-    }
+    });
+}
+
+
+    // Render for the current month on load
+    renderOccupancy(getCurrentMonthYear());
+
+    // You can keep the rest of your dashboard JS below
+    setTimeout(function () {
+        floatchart();
+    }, 700);
+    // ...existing code...
 
     for (let i = 1; i <= 6; i++) {
         // U2 Donut

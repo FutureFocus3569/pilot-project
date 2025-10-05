@@ -12,20 +12,41 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
+
+# --- Standard imports ---
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+# --- Heroku/production imports ---
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+XERO_CLIENT_ID = '7C578E320B63424296114FEEA7272E56'
+XERO_CLIENT_SECRET = 'f1a2xUWDnbtxGkfECztEEboauv07UWRRzOiRn2R0iBspBgzI'
+XERO_REDIRECT_URI = 'https://ff-group-815da21002bd.herokuapp.com/xero/callback'
+
+# Xero Tenant ID for Papamoa Beach
+XERO_TENANT_ID = '613cb02c-c997-49f9-bf2c-7b4eebb571d2'
+
+
+# Allow admin login via LocalXpose public URL
+CSRF_TRUSTED_ORIGINS = [
+    "https://kebbsekxoo.loclx.io",
+    "https://ff-group-815da21002bd.herokuapp.com"
+]
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%_9bu0t0afl+88vj)pz(@%y_fe@t+30aesh-%$9w0+pg@ck^1q'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-%_9bu0t0afl+88vj)pz(@%y_fe@t+30aesh-%$9w0+pg@ck^1q')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1')
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1', '192.168.44.138', '*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -41,6 +62,7 @@ INSTALLED_APPS = [
     'overdue_invoices',
     'rest_framework',
     'corsheaders',
+    'app',  # Added for company knowledge base
 ]
 
 MIDDLEWARE = [
@@ -62,7 +84,7 @@ ROOT_URLCONF = 'childcare_admin.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'app' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,10 +103,11 @@ WSGI_APPLICATION = 'childcare_admin.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+        conn_max_age=600,
+        ssl_require=False
+    )
 }
 
 
@@ -122,7 +145,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+# Add static files dirs so Django finds app/static/assets
+STATICFILES_DIRS = [
+    BASE_DIR / "app" / "static",
+]
+
+# For collectstatic in production
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -132,3 +163,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Heroku settings
 import django_heroku
 django_heroku.settings(locals())
+
+# Redirect to dashboard after login
+LOGIN_REDIRECT_URL = "/"

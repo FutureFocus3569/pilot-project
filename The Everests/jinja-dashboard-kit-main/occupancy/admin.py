@@ -1,13 +1,20 @@
 from django.contrib import admin
-from .models import Centre, Occupancy
+from .models import Centre, Occupancy, Budget
+
+# Budget admin
+@admin.register(Budget)
+class BudgetAdmin(admin.ModelAdmin):
+    list_display = ("centre", "category", "year", "xero_account_code", "monthly_budget", "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
+    list_filter = ("centre", "category", "year")
+    search_fields = ("category",)
 
 @admin.register(Centre)
 class CentreAdmin(admin.ModelAdmin):
-    list_display = ('name', 'api_id', 'moe_number', 'u2_licensed', 'total_licensed')
+    list_display = ('name', 'api_id', 'moe_number', 'u2_licensed', 'total_licensed', 'nzbn')
 
     fieldsets = (
         (None, {
-            'fields': ('name', 'api_id', 'moe_number', 'u2_licensed', 'total_licensed'),
+            'fields': ('name', 'api_id', 'moe_number', 'u2_licensed', 'total_licensed', 'nzbn'),
         }),
     )
 

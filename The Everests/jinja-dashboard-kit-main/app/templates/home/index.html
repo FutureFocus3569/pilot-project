@@ -1,239 +1,227 @@
-<!-- TEST-TOP-123 -->
-{% extends "layouts/base.html" %}
 
-{% block title %} Dashboard {% endblock %} 
+{% extends "layouts/base.html" %}
+<!-- TEST-TOP-123 -->
+
+{% block title %} Dashboard {% endblock %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}{% endblock stylesheets %}
 
-
 {% block content %}
-
-    <!-- Monthly Occupancy Section -->
-    <div class="pc-container">
-        <div class="pcoded-content">
-            {% include "includes/monthly_occupancy.html" %}
-
-            <!-- [ breadcrumb ] start -->
-            <div class="page-header">
-                <div class="page-block">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <div class="page-header-title">
-                                <h5 class="m-b-10">Dashboard sale</h5>
-                            </div>
-                            <ul class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                                <li class="breadcrumb-item">Dashboard sale</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- [ breadcrumb ] end -->
-            <!-- [ Main Content ] start -->
-            <div class="row">
-                <!-- support-section start -->
-                <div class="col-xl-6 col-md-12">
-                    <div class="card flat-card">
-                        <div class="row-table">
-                            <div class="col-sm-6 card-body br">
-                                <div class="row">
-                                    <div class="col-sm-4">
-                                        <i class="material-icons-two-tone text-primary mb-1">group</i>
-                                    </div>
-                                    <div class="col-sm-8 text-md-center">
-                                        <h5>1000</h5>
-                                        <span>Customers</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 d-none d-md-table-cell d-lg-table-cell d-xl-table-cell card-body br">
-                                <div class="row">
-                                    <div class="col-sm-4">
-                                        <i class="material-icons-two-tone text-primary mb-1">language</i>
-                                    </div>
-                                    <div class="col-sm-8 text-md-center">
-                                        <h5>$1252</h5>
-                                        <span>Revenue</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 card-body">
-                                <div class="row">
-                                    <div class="col-sm-4">
-                                        <i class="material-icons-two-tone text-primary mb-1">unarchive</i>
-                                    </div>
-                                    <div class="col-sm-8 text-md-center">
-                                        <h5>600</h5>
-                                        <span>Growth</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row-table">
-                            <div class="col-sm-6 card-body br">
-                                <div class="row">
-                                    <div class="col-sm-4">
-                                        <i class="material-icons-two-tone text-primary mb-1">swap_horizontal_circle</i>
-                                    </div>
-                                    <div class="col-sm-8 text-md-center">
-                                        <h5>3550</h5>
-                                        <span>Returns</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 d-none d-md-table-cell d-lg-table-cell d-xl-table-cell card-body br">
-                                <div class="row">
-                                    <div class="col-sm-4">
-                                        <i class="material-icons-two-tone text-primary mb-1">cloud_download</i>
-                                    </div>
-                                    <div class="col-sm-8 text-md-center">
-                                        <h5>3550</h5>
-                                        <span>Downloads</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 card-body">
-                                <div class="row">
-                                    <div class="col-sm-4">
-                                        <i class="material-icons-two-tone text-primary mb-1">shopping_cart</i>
-                                    </div>
-                                    <div class="col-sm-8 text-md-center">
-                                        <h5>100%</h5>
-                                        <span>Order</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <!-- Removed Conversion Rate and Order Delivered sections -->
-                    </div>
-                </div>
-                <div class="col-xl-6 col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>Department wise monthly sales report</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row pb-2">
-                                <div class="col-auto m-b-10">
-                                    <h3 class="mb-1">$21,356.46</h3>
-                                    <span>Total Sales</span>
-                                </div>
-                                <div class="col-auto m-b-10">
-                                    <h3 class="mb-1">$1935.6</h3>
-                                    <span>Average</span>
-                                </div>
-                            </div>
-                            <div id="account-chart"></div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Monthly Occupancy Section -->
-                <div class="col-12 mt-4">
-                    <div class="card p-4" style="background:#f8f9fa;">
-                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3">
-                            <div>
-                                <h4 class="mb-1">Childcare Centers Overview</h4>
-                                <div class="text-muted" style="font-size:1em;">Live occupancy data for all 6 centers - automatically updated Monday to Friday at 5am NZT</div>
-                            </div>
-                            <div class="d-flex align-items-center mt-3 mt-md-0">
-                                <button id="month-back" class="btn btn-outline-secondary btn-sm me-2">&#60;</button>
-                                <span id="month-label" class="fw-bold px-2" style="font-size:1.1em;">Month</span>
-                                <button id="month-forward" class="btn btn-outline-secondary btn-sm ms-2">&#62;</button>
-                            </div>
-                        </div>
-                        <div class="mb-3 text-center">
-                            <span class="fw-bold" style="font-size:1.1em;">Average Occupancy</span>
-                            <span id="avg-u2" class="ms-3" style="color:#0d8abc;">U2: --</span>
-                            <span id="avg-o2" class="ms-3" style="color:#43a047;">O2: --</span>
-                            <span id="avg-total" class="ms-3" style="color:#fbc02d;">Total: --</span>
-                        </div>
-                        <div class="row g-4" id="monthly-occupancy-row">
-                            <!-- Occupancy cards will be rendered here -->
-                        </div>
-                    </div>
-                <!-- customer-section start -->
-                <!-- Removed Customer Satisfaction section -->
-                <!-- Removed New Products and Feeds sections -->
-                </div>
-                <!-- customer-section end -->
-            </div>
-            <!-- [ Main Content ] end -->
-        </div>
-    </div>
-
-    <!-- Overdue Invoices Amount Section -->
     <div class="pc-container">
       <div class="pcoded-content">
-        <div class="card p-4 mt-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-              <h4 class="mb-1" style="font-weight:600;color:#374151;">Overdue Invoices Amount</h4>
-              <div class="text-muted" style="font-size:1em;">Live invoice data - automatically updated weekdays at 5am NZT</div>
+        <div class="page-header" style="margin-bottom:0.5rem; padding-bottom:0;">
+          <div class="page-block" style="padding-bottom:0; margin-bottom:0;">
+            <div class="row align-items-center" style="margin-bottom:0;">
+              <div class="col-md-6">
+                <div class="page-header-title" style="margin-bottom:0;">
+                  <h5 class="m-b-10" style="margin-bottom:0;">Dashboard</h5>
+                </div>
+                <ul class="breadcrumb" style="margin-bottom:0.2rem;">
+                  <li class="breadcrumb-item"><a href="/">Home</a></li>
+                  <li class="breadcrumb-item">Dashboard</li>
+                </ul>
+              </div>
             </div>
+          </div>
+        </div>
+        <!-- All your main dashboard HTML, cards, and enrolment status sections go here. -->
+        <!-- Monthly Occupancy Section -->
+        <div class="card p-4 mb-4 mt-5" style="margin-top:3.5rem !important;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Monthly Occupancy</h4>
+            <span class="text-muted" style="font-size:1em;">Live occupancy data - updated daily</span>
+          </div>
+          <!-- Month Selector -->
+          <div class="d-flex justify-content-center align-items-center mb-3" id="occupancy-month-selector">
+            <button id="occupancy-prev-month" class="btn btn-link px-2" style="font-size:1.5em;" aria-label="Previous Month">
+              <span aria-hidden="true">&#8592;</span>
+            </button>
+            <span id="occupancy-current-month" style="font-size:1.2em;font-weight:600;min-width:110px;display:inline-block;text-align:center;">Jul 2025</span>
+            <button id="occupancy-next-month" class="btn btn-link px-2" style="font-size:1.5em;" aria-label="Next Month">
+              <span aria-hidden="true">&#8594;</span>
+            </button>
+          </div>
+          <div class="row g-4">
+            <div id="monthly-occupancy-row" class="row g-4"></div>
+          </div>
+        </div>
+    <!-- Enrolment Status Section -->
+    <div class="pc-container" style="width:100%;max-width:100vw;">
+      <div class="pcoded-content" style="width:100%;">
+        <div class="card p-4 mt-4 w-100" style="box-sizing:border-box;">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
             <div>
-              <button class="btn btn-outline-secondary btn-sm" disabled>
+              <h4 class="mb-1">Enrolment Status</h4>
+              <div class="text-muted" style="font-size:1em;">Live enrolment data - automatically updated weekdays at 5am NZT</div>
+            </div>
+            <div class="d-flex flex-column align-items-end" style="min-width:220px;">
+              <button class="btn btn-outline-secondary btn-sm mb-1" disabled>
                 <i class="material-icons-two-tone">autorenew</i> Auto-Updated Daily
               </button>
               <div class="text-muted" style="font-size:0.9em;">Data sourced from Discover<br>Auto-updated at 5am NZT, Mon-Fri</div>
             </div>
           </div>
-          <div class="row g-0 justify-content-center" style="border-top:1px solid #ececec;">
-            <!-- Example cards for each center -->
-            <div class="col-md-2 col-6 p-3 d-flex justify-content-center">
-              <div class="card w-100 text-center" style="border-radius:0.7rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);border:none;">
-                <div class="card-header bg-white p-2" style="border-radius:0.7rem 0.7rem 0 0;font-weight:600;font-size:1.15em;color:#222;">Papamoa Beach</div>
-                <div class="card-body p-3">
-                  <div style="font-size:1.4em;font-weight:600;color:#f26a6a;">$4540.30</div>
-                  <div class="text-muted mt-1" style="font-size:1.1em;letter-spacing:1px;">OVERDUE</div>
+          <div class="row g-4 justify-content-center">
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+              <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                  <h5 class="m-0 p-2" style="color:#111;">Papamoa Beach</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                  <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#43a047;font-weight:600;">83</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">4</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">11</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="col-md-2 col-6 p-3 d-flex justify-content-center">
-              <div class="card w-100 text-center" style="border-radius:0.7rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);border:none;">
-                <div class="card-header bg-white p-2" style="border-radius:0.7rem 0.7rem 0 0;font-weight:600;font-size:1.15em;color:#222;">The Boulevard</div>
-                <div class="card-body p-3">
-                  <div style="font-size:1.4em;font-weight:600;color:#f26a6a;">$10512.35</div>
-                  <div class="text-muted mt-1" style="font-size:1.1em;letter-spacing:1px;">OVERDUE</div>
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+              <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                  <h5 class="m-0 p-2" style="color:#111;">The Boulevard</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                  <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#43a047;font-weight:600;">64</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">4</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">2</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="col-md-2 col-6 p-3 d-flex justify-content-center">
-              <div class="card w-100 text-center" style="border-radius:0.7rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);border:none;">
-                <div class="card-header bg-white p-2" style="border-radius:0.7rem 0.7rem 0 0;font-weight:600;font-size:1.15em;color:#222;">The Bach</div>
-                <div class="card-body p-3">
-                  <div style="font-size:1.4em;font-weight:600;color:#f26a6a;">$2596.23</div>
-                  <div class="text-muted mt-1" style="font-size:1.1em;letter-spacing:1px;">OVERDUE</div>
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+              <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                  <h5 class="m-0 p-2" style="color:#111;">The Bach</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                  <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#43a047;font-weight:600;">49</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">7</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="col-md-2 col-6 p-3 d-flex justify-content-center">
-              <div class="card w-100 text-center" style="border-radius:0.7rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);border:none;">
-                <div class="card-header bg-white p-2" style="border-radius:0.7rem 0.7rem 0 0;font-weight:600;font-size:1.15em;color:#222;">Terrace Views</div>
-                <div class="card-body p-3">
-                  <div style="font-size:1.4em;font-weight:600;color:#f26a6a;">$8253.98</div>
-                  <div class="text-muted mt-1" style="font-size:1.1em;letter-spacing:1px;">OVERDUE</div>
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+              <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                  <h5 class="m-0 p-2" style="color:#111;">Terrace Views</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                  <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#43a047;font-weight:600;">109</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">5</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="col-md-2 col-6 p-3 d-flex justify-content-center">
-              <div class="card w-100 text-center" style="border-radius:0.7rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);border:none;">
-                <div class="card-header bg-white p-2" style="border-radius:0.7rem 0.7rem 0 0;font-weight:600;font-size:1.15em;color:#222;">Livingstone Drive</div>
-                <div class="card-body p-3">
-                  <div style="font-size:1.4em;font-weight:600;color:#f26a6a;">$5072.85</div>
-                  <div class="text-muted mt-1" style="font-size:1.1em;letter-spacing:1px;">OVERDUE</div>
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+              <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                  <h5 class="m-0 p-2" style="color:#111;">Livingstone Drive</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                  <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#43a047;font-weight:600;">60</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">4</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="col-md-2 col-6 p-3 d-flex justify-content-center">
-              <div class="card w-100 text-center" style="border-radius:0.7rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);border:none;">
-                <div class="card-header bg-white p-2" style="border-radius:0.7rem 0.7rem 0 0;font-weight:600;font-size:1.15em;color:#222;">West Dune</div>
-                <div class="card-body p-3">
-                  <div style="font-size:1.4em;font-weight:600;color:#f26a6a;">$0.00</div>
-                  <div class="text-muted mt-1" style="font-size:1.1em;letter-spacing:1px;">OVERDUE</div>
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+              <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                  <h5 class="m-0 p-2" style="color:#111;">West Dune</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                  <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#43a047;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">6</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -241,8 +229,9 @@
         </div>
       </div>
     </div>
-    <!-- [ Main Content ] end -->
-
+      </div>
+    </div>
+{% endblock %}
     <!-- Enrolment Status Section -->
     <!-- TEST-ENROLMENT-SECTION -->
     <div class="pc-container">
@@ -261,14 +250,14 @@
                 </div>
             </div>
             <div class="row g-4">
-                <!-- Example cards for each center -->
+                <!-- Example Enrolment Status cards for each center -->
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
                         <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
-                            <h5 class="m-0 p-3" style="color:#111;">Papamoa Beach</h5>
+                            <h5 class="m-0 p-2" style="color:#111;">Papamoa Beach</h5>
                         </div>
-                        <div class="card-body text-center">
-                            <div class="row mb-2 d-flex justify-content-center align-items-end text-center">
+                        <div class="card-body text-center p-3 pt-2 pb-2">
+                            <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
                                 <div class="col p-0">
                                     <span style="font-size:1.3em;color:#43a047;font-weight:600;">83</span><br>
                                     <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
@@ -286,17 +275,16 @@
                                     <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
                                 </div>
                             </div>
-                            <!-- Removed license and MOE details as requested -->
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
                         <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
-                            <h5 class="m-0 p-3" style="color:#111;">The Boulevard</h5>
+                            <h5 class="m-0 p-2" style="color:#111;">The Boulevard</h5>
                         </div>
-                        <div class="card-body text-center">
-                            <div class="row mb-2 d-flex justify-content-center align-items-end text-center">
+                        <div class="card-body text-center p-3 pt-2 pb-2">
+                            <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
                                 <div class="col p-0">
                                     <span style="font-size:1.3em;color:#43a047;font-weight:600;">64</span><br>
                                     <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
@@ -320,10 +308,10 @@
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
                         <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
-                            <h5 class="m-0 p-3" style="color:#111;">The Bach</h5>
+                            <h5 class="m-0 p-2" style="color:#111;">The Bach</h5>
                         </div>
-                        <div class="card-body text-center">
-                            <div class="row mb-2 d-flex justify-content-center align-items-end text-center">
+                        <div class="card-body text-center p-3 pt-2 pb-2">
+                            <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
                                 <div class="col p-0">
                                     <span style="font-size:1.3em;color:#43a047;font-weight:600;">49</span><br>
                                     <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
@@ -347,10 +335,10 @@
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
                         <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
-                            <h5 class="m-0 p-3" style="color:#111;">Terrace Views</h5>
+                            <h5 class="m-0 p-2" style="color:#111;">Terrace Views</h5>
                         </div>
-                        <div class="card-body text-center">
-                            <div class="row mb-2 d-flex justify-content-center align-items-end text-center">
+                        <div class="card-body text-center p-3 pt-2 pb-2">
+                            <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
                                 <div class="col p-0">
                                     <span style="font-size:1.3em;color:#43a047;font-weight:600;">109</span><br>
                                     <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
@@ -374,10 +362,10 @@
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
                         <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
-                            <h5 class="m-0 p-3" style="color:#111;">Livingstone Drive</h5>
+                            <h5 class="m-0 p-2" style="color:#111;">Livingstone Drive</h5>
                         </div>
-                        <div class="card-body text-center">
-                            <div class="row mb-2 d-flex justify-content-center align-items-end text-center">
+                        <div class="card-body text-center p-3 pt-2 pb-2">
+                            <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
                                 <div class="col p-0">
                                     <span style="font-size:1.3em;color:#43a047;font-weight:600;">60</span><br>
                                     <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
@@ -401,10 +389,10 @@
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
                         <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
-                            <h5 class="m-0 p-3" style="color:#111;">West Dune</h5>
+                            <h5 class="m-0 p-2" style="color:#111;">West Dune</h5>
                         </div>
-                        <div class="card-body text-center">
-                            <div class="row mb-2 d-flex justify-content-center align-items-end text-center">
+                        <div class="card-body text-center p-3 pt-2 pb-2">
+                            <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
                                 <div class="col p-0">
                                     <span style="font-size:1.3em;color:#43a047;font-weight:600;">0</span><br>
                                     <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
@@ -447,39 +435,220 @@
         box-shadow: 0 4px 16px rgba(30,200,233,0.18), 0 3px 12px rgba(0,0,0,0.10);
         outline: 2px solid #1de9b6;
     }
-    .donut-chart {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto;
-    }
     .donut-label {
         font-size: 1em;
         font-weight: 600;
         margin-top: 0.3em;
         letter-spacing: 1px;
     }
-    .donut-value {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%,-50%);
-        font-size: 1.1em;
-        font-weight: bold;
-        color: #333;
-        pointer-events: none;
-    }
-    .donut-container {
-        position: relative;
-        display: inline-block;
-    }
     </style>
 
-{% endblock content %}
-
-<!-- Specific Page JS goes HERE  -->
-{% block javascripts %}
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
+    // Month navigation logic for occupancy section and live data fetch
+    const OCCUPANCY_MONTHS = [
+      'Jan 2024', 'Feb 2024', 'Mar 2024', 'Apr 2024', 'May 2024', 'Jun 2024', 'Jul 2024',
+      'Aug 2024', 'Sep 2024', 'Oct 2024', 'Nov 2024', 'Dec 2024',
+      'Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025', 'Jul 2025'
+    ];
+    const OCCUPANCY_CENTRES = [
+      'Papamoa Beach', 'The Boulevard', 'The Bach', 'Terrace Views', 'Livingstone Drive', 'West Dune'
+    ];
+    let occupancyMonthIdx = OCCUPANCY_MONTHS.length - 1;
+
+    function getMonthYearString(idx) {
+      // Convert 'Jul 2025' to '07-2025' for API
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      let [mon, year] = OCCUPANCY_MONTHS[idx].split(' ');
+      let mm = (months.indexOf(mon) + 1).toString().padStart(2, '0');
+      return mm + '-' + year;
+    }
+
+    async function fetchOccupancyData(idx) {
+      const month_year = getMonthYearString(idx);
+      try {
+        let resp = await fetch(`/api/occupancy/?month_year=${month_year}`);
+        if (resp.ok) {
+          return await resp.json();
+        }
+      } catch (err) {
+        console.error('Occupancy API fetch error:', err);
+      }
+      return [];
+    }
+
+    function renderOccupancyCards(data) {
+      const row = document.getElementById('monthly-occupancy-row');
+      row.innerHTML = '';
+      OCCUPANCY_CENTRES.forEach((centre) => {
+        const centreData = data.find(d => d.centre_name === centre);
+        let u2 = centreData && typeof centreData.u2 === 'number' ? centreData.u2 : (centreData && centreData.u2 ? centreData.u2 : 0);
+        let o2 = centreData && typeof centreData.o2 === 'number' ? centreData.o2 : (centreData && centreData.o2 ? centreData.o2 : 0);
+        let total = centreData && typeof centreData.total === 'number' ? centreData.total : (centreData && centreData.total ? centreData.total : 0);
+        let card = document.createElement('div');
+        card.className = 'col-md-6 col-lg-4 mb-4';
+        card.innerHTML = `
+          <div class="card h-100 occupancy-card" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+            <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+              <h5 class="m-0 p-2" style="color:#111;">${centre}</h5>
+            </div>
+            <div class="card-body text-center p-3 pt-2 pb-2">
+              <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                <div class="col p-0">
+                  <span style="font-size:1.3em;color:#43a047;font-weight:600;">${u2}%</span><br>
+                  <span class="text-muted" style="font-size:0.95em;">U2</span>
+                </div>
+                <div class="col p-0">
+                  <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">${o2}%</span><br>
+                  <span class="text-muted" style="font-size:0.95em;">O2</span>
+                </div>
+                <div class="col p-0">
+                  <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">${total}%</span><br>
+                  <span class="text-muted" style="font-size:0.95em;">TOTAL</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        row.appendChild(card);
+      });
+    }
+
+    async function updateOccupancyMonthSelector() {
+      document.getElementById('occupancy-current-month').textContent = OCCUPANCY_MONTHS[occupancyMonthIdx];
+      document.getElementById('occupancy-prev-month').disabled = occupancyMonthIdx === 0;
+      document.getElementById('occupancy-next-month').disabled = occupancyMonthIdx === OCCUPANCY_MONTHS.length - 1;
+      const data = await fetchOccupancyData(occupancyMonthIdx);
+      renderOccupancyCards(data);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('occupancy-prev-month').addEventListener('click', function() {
+        if (occupancyMonthIdx > 0) {
+          occupancyMonthIdx--;
+          updateOccupancyMonthSelector();
+        }
+      });
+      document.getElementById('occupancy-next-month').addEventListener('click', function() {
+        if (occupancyMonthIdx < OCCUPANCY_MONTHS.length - 1) {
+          occupancyMonthIdx++;
+          updateOccupancyMonthSelector();
+        }
+      });
+      updateOccupancyMonthSelector();
+    });
+    </script>
+    <script>
+    // Fetch and render overdue invoices on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchOverdueInvoices();
+    });
+
+    const OVERDUE_CENTRES = [
+        "Papamoa Beach",
+        "The Boulevard",
+        "The Bach",
+        "Terrace Views",
+        "Livingstone Drive",
+        "West Dune"
+    ];
+
+    // --- Budget fallback logic for Xero/Overdue section ---
+    // Hardcoded fallback budgets (all $0, can be updated as needed)
+    const FALLBACK_BUDGETS = {
+        "Papamoa Beach": 0,
+        "The Boulevard": 0,
+        "The Bach": 0,
+        "Terrace Views": 0,
+        "Livingstone Drive": 0,
+        "West Dune": 0
+    };
+
+    // Example: If you want to show a budget column in the overdue cards, you can add it here
+    // If you want to show budget in a different section, adapt as needed
+
+    async function fetchOverdueInvoices() {
+        let data = [];
+        let budgets = {};
+        // Use local backend API base URL
+        const API_BASE = `http://103.231.90.204:8001`;
+        try {
+            let resp = await fetch(`${API_BASE}/api/overdue-invoices/`);
+            if (resp.ok) {
+                data = await resp.json();
+            } else {
+                console.error('Overdue API request failed:', resp.status, resp.statusText);
+            }
+        } catch (err) {
+            console.error('Overdue API fetch error:', err);
+        }
+        // Try to fetch budgets from Django API (all categories for selected centre and year)
+        try {
+            let centre = "Papamoa Beach"; // You may want to make this dynamic if needed
+            let year = 2025;
+            let budgetResp = await fetch(`${API_BASE}/api/budgets/?centre=${encodeURIComponent(centre)}&year=${year}`);
+            if (budgetResp.ok) {
+                let budgetData = await budgetResp.json();
+                // Map: { category: monthly_budget }, include 0 values
+                budgetData.forEach(b => {
+                    if (b.category != null && b.monthly_budget != null) {
+                        budgets[b.category] = b.monthly_budget;
+                    }
+                });
+            } else {
+                console.warn('Budget API request failed:', budgetResp.status, budgetResp.statusText);
+            }
+        } catch (err) {
+            console.warn('Budget API fetch error:', err);
+        }
+        // Render overdue invoice cards for all centres (not filtered by budgets)
+        renderOverdueCards(data, OVERDUE_CENTRES);
+
+        // Render Xero Budget vs Actuals table for Papamoa Beach
+        renderXeroBudgetTable(budgets);
+    }
+
+    // Render the Xero Budget vs Actuals table for a centre
+    function renderXeroBudgetTable(budgets) {
+        // Only show categories that have a budget entry from the API (including 0)
+        let tableBody = document.getElementById('xero-budget-table-body');
+        if (!tableBody) return;
+        tableBody.innerHTML = '';
+        Object.keys(budgets).forEach(category => {
+            // Only show if the category is present in the API response (even if 0)
+            if (budgets[category] !== undefined && budgets[category] !== null) {
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${category}</td>
+                    <td>$${budgets[category]}</td>
+                    <td><!-- Actuals for Jan go here --></td>
+                `;
+                tableBody.appendChild(row);
+            }
+        });
+    }
+
+    // If you want to show a budget value in the overdue cards, add a budget column here
+    // This example just shows overdue amount, but you can add budget as needed
+    function renderOverdueCards(data, centres) {
+        const row = document.getElementById('overdue-invoices-row');
+        row.innerHTML = '';
+        centres.forEach((centre) => {
+            const centreData = data.find(d => d.centre_name === centre);
+            let amount = centreData && centreData.overdue_invoice_amount ? centreData.overdue_invoice_amount : '0.00';
+            let card = document.createElement('div');
+            card.className = 'col-md-2 col-6 p-3 d-flex justify-content-center';
+            card.innerHTML = `
+              <div class="card w-100 text-center" style="border-radius:0.7rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);border:none;">
+                <div class="card-header bg-white p-2" style="border-radius:0.7rem 0.7rem 0 0;font-weight:600;font-size:1.15em;color:#222;">${centre}</div>
+                <div class="card-body p-3">
+                  <div style="font-size:1.4em;font-weight:600;color:#f26a6a;">$${amount.replace(/^\/$/, '')}</div>
+                  <div class="text-muted mt-1" style="font-size:1.1em;letter-spacing:1px;">OVERDUE</div>
+                </div>
+              </div>
+            `;
+            row.appendChild(card);
+        });
+    }
     // Utility: get unique months from data
     function getUniqueMonths(data) {
         const months = Array.from(new Set(data.map(row => row.month)));
@@ -577,106 +746,6 @@
                         <div class="d-flex justify-content-center align-items-center w-100 mb-2 mt-4" style="gap: 16px; max-width: 420px; margin: 0 auto;">
                             <div class="text-center">
                                 <div class="donut-container"><div id="donut-u2-${idx}" class="donut-chart"></div></div>
-                                <div class="donut-label" style="color:${colors.u2}">U2</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="donut-container"><div id="donut-o2-${idx}" class="donut-chart"></div></div>
-                                <div class="donut-label" style="color:${colors.o2}">O2</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="donut-container"><div id="donut-total-${idx}" class="donut-chart"></div></div>
-                                <div class="donut-label" style="color:${colors.total}">Total</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            row.appendChild(card);
-            renderDonutChart(`donut-u2-${idx}`, u2, colors.u2);
-            renderDonutChart(`donut-o2-${idx}`, o2, colors.o2);
-            renderDonutChart(`donut-total-${idx}`, total, colors.total);
-        });
-    }
-
-    // Month navigation and data fetch
-    let months = [];
-    let currentMonthIdx = 0;
-    const CENTRES = [
-        "Papamoa Beach",
-        "The Boulevard",
-        "The Bach",
-        "Terrace Views",
-        "Livingstone Drive",
-        "West Dune"
-    ];
-
-    async function fetchOccupancy(month) {
-        // Update this URL to your Django API endpoint
-        try {
-            let resp = await fetch(`http://127.0.0.1:8000/api/occupancy/?month_year=${month}`);
-            if (!resp.ok) {
-                console.error('API request failed:', resp.status, resp.statusText);
-                return [];
-            }
-            let json = await resp.json();
-            console.log('API response for month', month, json);
-            return json;
-        } catch (err) {
-            console.error('API fetch error:', err);
-            return [];
-        }
-    }
-
-    async function updateDashboard() {
-        let month = months[currentMonthIdx];
-        let data = await fetchOccupancy(month);
-        // If no data for selected month, try previous months
-        let triedMonths = 0;
-        while ((!Array.isArray(data) || data.length === 0) && triedMonths < months.length) {
-            console.warn('No occupancy data received for month', month);
-            // Move to previous month
-            if (currentMonthIdx > 0) {
-                currentMonthIdx--;
-                month = months[currentMonthIdx];
-                data = await fetchOccupancy(month);
-                triedMonths++;
-            } else {
-                break;
-            }
-        }
-        document.getElementById('month-label').innerText = month;
-        renderOccupancyCards(data, CENTRES);
-        // Calculate and display averages
-        let avg = getAverages(data);
-        document.getElementById('avg-u2').innerText = `U2: ${avg.u2}`;
-        document.getElementById('avg-o2').innerText = `O2: ${avg.o2}`;
-        document.getElementById('avg-total').innerText = `Total: ${avg.total}`;
-    }
-
-    async function initOccupancyDashboard() {
-        // Expanded months: Jan 2024 to Jul 2025
-        months = [
-            "01-2024", "02-2024", "03-2024", "04-2024", "05-2024", "06-2024", "07-2024", "08-2024", "09-2024", "10-2024", "11-2024", "12-2024",
-            "01-2025", "02-2025", "03-2025", "04-2025", "05-2025", "06-2025", "07-2025"
-        ];
-        currentMonthIdx = months.length - 1;
-
-        document.getElementById('month-back').onclick = () => {
-            if (currentMonthIdx > 0) {
-                currentMonthIdx--;
-                updateDashboard();
-            }
-        };
-        document.getElementById('month-forward').onclick = () => {
-            if (currentMonthIdx < months.length - 1) {
-                currentMonthIdx++;
-                updateDashboard();
-            }
-        };
-
-        await updateDashboard();
-    }
-    document.addEventListener('DOMContentLoaded', initOccupancyDashboard);
-    </script>
-{% endblock javascripts %}
-<!-- TEST-BOTTOM-456 -->
+{% block javascripts %}
+{% endblock %}
+        let avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : '--';

@@ -4,7 +4,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 # Flask modules
-from flask   import render_template, request
+from flask   import render_template, request, jsonify
 from jinja2  import TemplateNotFound
 
 # App modules

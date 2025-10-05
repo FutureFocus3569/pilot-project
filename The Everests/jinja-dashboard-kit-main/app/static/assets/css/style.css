@@ -10258,8 +10258,9 @@ pre[class*="language-"] > code {
 .pc-sidebar.navbar-collapsed .card {
   display: none; }
 
+/* Sidebar background black */
 .pc-sidebar {
-  background: #1c232f;
+  background: #000;
   box-shadow: 0 1px 20px 0 rgba(69, 90, 100, 0.08);
   width: 280px;
   position: fixed;
@@ -10303,12 +10304,30 @@ pre[class*="language-"] > code {
       height: 18px;
       color: #778290;
       fill: rgba(114, 103, 239, 0.2); }
-  .pc-sidebar .pc-link {
+/* Default sidebar link style */
+/* Sidebar link default: white */
+.pc-sidebar .pc-link {
     display: block;
     padding: 13px 20px;
-    color: #ced4dc;
+    color: #fff;
     font-size: 13px;
-    font-weight: 500; }
+    font-weight: 500;
+}
+/* Make Dashboard, Xero, Marketing links white and bold */
+.pc-sidebar .pc-navbar > .pc-item:nth-child(2) .pc-link, /* Dashboard */
+.pc-sidebar .pc-navbar > .pc-item:nth-child(3) .pc-link, /* Xero */
+.pc-sidebar .pc-navbar > .pc-item:nth-child(4) .pc-link, /* Marketing */
+.pc-sidebar .pc-navbar > .pc-item:nth-child(5) .pc-link /* Add more if needed */
+{
+    color: #fff !important;
+    font-weight: 600;
+}
+/* Active Dashboard: white background, black text, bold */
+.pc-sidebar .pc-navbar > .pc-item:nth-child(2).active > .pc-link {
+    background: #fff !important;
+    color: #000 !important;
+    font-weight: bold !important;
+}
     .pc-sidebar .pc-link:active, .pc-sidebar .pc-link:focus, .pc-sidebar .pc-link:hover {
       text-decoration: none;
       color: #7267EF; }
@@ -10349,14 +10368,14 @@ pre[class*="language-"] > code {
     -webkit-user-select: none;
             user-select: none; }
   .pc-sidebar .pc-item.active > .pc-link, .pc-sidebar .pc-item:focus > .pc-link, .pc-sidebar .pc-item:hover > .pc-link {
-    color: #7267EF; }
+    color: #fff; }
     .pc-sidebar .pc-item.active > .pc-link .pc-micon i,
     .pc-sidebar .pc-item.active > .pc-link .pc-micon svg, .pc-sidebar .pc-item:focus > .pc-link .pc-micon i,
     .pc-sidebar .pc-item:focus > .pc-link .pc-micon svg, .pc-sidebar .pc-item:hover > .pc-link .pc-micon i,
     .pc-sidebar .pc-item:hover > .pc-link .pc-micon svg {
       color: #7267EF; }
   .pc-sidebar .pc-navbar > .pc-item.active > .pc-link, .pc-sidebar .pc-navbar > .pc-item:focus > .pc-link, .pc-sidebar .pc-navbar > .pc-item:hover > .pc-link {
-    background: #161c25; }
+    background: #222; }
   .pc-sidebar .pc-hasmenu.pc-trigger > .pc-submenu {
     display: block; }
   .pc-sidebar .pc-hasmenu.pc-trigger > .pc-link > .pc-arrow {
