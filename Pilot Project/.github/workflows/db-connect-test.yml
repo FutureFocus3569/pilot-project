@@ -1,0 +1,16 @@
+name: Test Supabase DB Connection
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-db-connection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test DB Connection with psql
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          echo "SELECT 1;" | psql "$DATABASE_URL"

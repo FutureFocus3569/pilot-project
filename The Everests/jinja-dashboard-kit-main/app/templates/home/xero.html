@@ -1,0 +1,225 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Xero {% endblock %}
+
+
+{% block content %}
+<div class="pc-container">
+  <div class="pcoded-content">
+    <!-- [ breadcrumb restored with compact spacing ] -->
+    <div class="page-header" style="margin-bottom:0.5rem; padding-bottom:0;">
+      <div class="page-block" style="padding-bottom:0; margin-bottom:0;">
+        <div class="row align-items-center" style="margin-bottom:0;">
+          <div class="col-md-6">
+            <div class="page-header-title" style="margin-bottom:0;">
+              <h5 class="m-b-10" style="margin-bottom:0;">Xero Budget vs Actuals</h5>
+            </div>
+            <ul class="breadcrumb" style="margin-bottom:0.2rem;">
+              <li class="breadcrumb-item"><a href="/">Home</a></li>
+              <li class="breadcrumb-item">Xero Budget vs Actuals</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Page heading and subheading to match screenshot -->
+    <!-- Removed static Papamoa Beach heading to avoid duplicate, now only dynamic headings per centre are shown -->
+    <div style="margin-top:2.5rem;"></div>
+    <div style="margin-bottom: 1.5rem;">
+      <a id="xero-login-btn" href="#" class="btn btn-primary">Connect to Xero</a>
+      <span style="margin-left:1em; color:#888; font-size:0.95em;">(Connect to Xero to pull live actuals)</span>
+    </div>
+    <div id="xero-centre-tables"></div>
+    <style>
+      .table th, .table td { vertical-align: middle !important; }
+      .xero-budget-table th, .xero-budget-table td { font-size: 0.93em; padding: 0.45em 0.5em; }
+      .variance-pos { color: #43a047; font-weight: 600; }
+      .variance-neg { color: #e53935; font-weight: 600; }
+    </style>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+// Dynamically set API_BASE to match the current host and port
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+const XERO_CATEGORIES = [
+  "Cleaning Supplies",
+  "First Aid",
+  "Food Costs",
+  "Kiri Classroom Resources",
+  "Wai Classroom Resources",
+  "Nga Classroom Resources",
+  "Te Hui Classroom Resources",
+  "Centre Purcahses",
+  "Printing and Stationary",
+  "Art and Messy Play",
+  "Meeting Costs",
+  "Nappies and Wipes",
+  "Repairs and Maintenance"
+];
+
+// Fallback actuals for demo (replace with real data as needed)
+const MONTHLY_ACTUALS = {
+  "Cleaning Supplies":   [18, 20, 15, 22, 19, 17, 16, 21, 20, 18, 19, 15],
+  "First Aid":           [8, 9, 7, 10, 8, 9, 8, 10, 9, 8, 9, 7],
+  "Food Costs":          [210, 220, 215, 225, 230, 210, 220, 225, 230, 215, 220, 210],
+  "Kiri Classroom Resources": [25, 30, 28, 32, 29, 27, 26, 31, 30, 28, 29, 25],
+  "Wai Classroom Resources":  [25, 30, 28, 32, 29, 27, 26, 31, 30, 28, 29, 25],
+  "Nga Classroom Resources":  [25, 30, 28, 32, 29, 27, 26, 31, 30, 28, 29, 25],
+  "Te Hui Classroom Resources": [25, 30, 28, 32, 29, 27, 26, 31, 30, 28, 29, 25],
+  "Centre Purcahses":    [35, 40, 38, 42, 39, 37, 36, 41, 40, 38, 39, 35],
+  "Printing and Stationary": [12, 15, 13, 16, 14, 13, 12, 15, 14, 13, 14, 12],
+  "Art and Messy Play":   [18, 20, 19, 21, 20, 19, 18, 20, 19, 18, 19, 17],
+  "Meeting Costs":        [10, 12, 11, 13, 12, 11, 10, 12, 11, 10, 11, 9],
+  "Nappies and Wipes":    [28, 30, 29, 32, 31, 29, 28, 31, 30, 29, 30, 28],
+  "Repairs and Maintenance": [45, 50, 48, 52, 49, 47, 46, 51, 50, 48, 49, 45]
+};
+
+function getActualTotal(arr) {
+  if (!Array.isArray(arr)) return '--';
+  return arr.reduce((a, b) => a + b, 0);
+}
+
+async function fetchBudgetData(centre, year) {
+  try {
+    // Dynamically build backend API base URL using current hostname and port 8001
+    let apiHost = window.location.hostname;
+    if (apiHost === 'localhost' || apiHost === '127.0.0.1') {
+      apiHost = '127.0.0.1';
+    }
+    // Use the same dynamic API_BASE as above
+    const resp = await fetch(`${API_BASE}/api/budgets/?centre=${encodeURIComponent(centre)}&year=${year}`);
+    if (!resp.ok) throw new Error('API error');
+    const data = await resp.json();
+    const result = {};
+    data.forEach(b => {
+      if (b.category && b.monthly_budget !== undefined && b.monthly_budget !== null) {
+        result[b.category] = Number(b.monthly_budget);
+      }
+    });
+    return result;
+  } catch (err) {
+    // On error, fallback to hardcoded values
+    const result = {};
+    XERO_CATEGORIES.forEach(cat => {
+      result[cat] = 0;
+    });
+    return result;
+  }
+}
+async function renderXeroBudgetTable() {
+  const centres = [
+    'Papamoa Beach',
+    'The Boulevard',
+    'The Bach',
+    'Terrace Views',
+    'Livingstone Drive',
+    'West Dune'
+  ];
+  const container = document.getElementById('xero-centre-tables');
+  container.innerHTML = '';
+  // Store per-centre budget data
+  const CENTRE_BUDGETS = {};
+  for (const centre of centres) {
+    // Fetch and store each centre's budget data
+    CENTRE_BUDGETS[centre] = await fetchBudgetData(centre, 2025);
+  }
+  let anyTable = false;
+  for (const centre of centres) {
+    const budgetData = CENTRE_BUDGETS[centre] || {};
+    const hasBudget = Object.values(budgetData).some(val => val !== 0 && val !== undefined && val !== null);
+    if (!hasBudget) continue;
+    anyTable = true;
+    const tableId = `xero-budget-table-body-${centre.replace(/\s+/g, '-')}`;
+    container.innerHTML += `
+      <div class="card mb-4">
+        <div class="card-header" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);color:#111;font-weight:600;">
+          ${centre} – Budget vs Actuals
+        </div>
+        <div class="card-body">
+          <div class="text-muted mb-2" style="font-size:1.08em;">Selected expense categories. Budget set in admin, actuals updated daily from Xero.</div>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle bg-white xero-budget-table" style="border-radius:0.7rem;overflow:hidden;font-size:0.93em;">
+              <thead class="table-light">
+                <tr>
+                  <th style="min-width:180px;">Category</th>
+                  <th class="text-end">Monthly Budget</th>
+                  <th class="text-end">Jan</th>
+                  <th class="text-end">Feb</th>
+                  <th class="text-end">Mar</th>
+                  <th class="text-end">Apr</th>
+                  <th class="text-end">May</th>
+                  <th class="text-end">Jun</th>
+                  <th class="text-end">Jul</th>
+                  <th class="text-end">Aug</th>
+                  <th class="text-end">Sep</th>
+                  <th class="text-end">Oct</th>
+                  <th class="text-end">Nov</th>
+                  <th class="text-end">Dec</th>
+                  <th class="text-end">Actual Spend</th>
+                  <th class="text-end">Variance</th>
+                </tr>
+              </thead>
+              <tbody id="${tableId}"></tbody>
+            </table>
+            <div class="text-muted mt-2" style="font-size:0.95em;">* Variance = Budget - Actual. Negative values indicate overspend.</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  // If no tables rendered, show a message
+  if (!anyTable) {
+    container.innerHTML = `<div class='alert alert-warning'>No budget data found for any centre. Please check your Django admin setup.</div>`;
+  }
+  // Try to fetch live actuals from backend
+  let liveActuals = {};
+  try {
+    const resp = await fetch(`${API_BASE}/api/xero-actuals/`);
+    if (resp.ok) {
+      const data = await resp.json();
+      liveActuals = data.actuals || {};
+    }
+  } catch (e) {
+    // Ignore, fallback to demo data
+  }
+  for (const centre of centres) {
+    const tableId = `xero-budget-table-body-${centre.replace(/\s+/g, '-')}`;
+    const tbody = document.getElementById(tableId);
+    const budgetData = CENTRE_BUDGETS[centre] || {};
+    if (!tbody) continue;
+    Object.keys(budgetData).forEach(cat => {
+      if (budgetData[cat] !== undefined && budgetData[cat] !== null) {
+        const budget = budgetData[cat];
+        // Use live actuals if available, else fallback
+        const monthly = liveActuals[cat] || MONTHLY_ACTUALS[cat] || Array(12).fill('--');
+        const actualTotal = getActualTotal(monthly);
+        const variance = budget * 12 - actualTotal;
+        const varianceClass = variance < 0 ? 'variance-neg' : 'variance-pos';
+        tbody.innerHTML += `
+          <tr>
+            <td>${cat}</td>
+            <td class="text-end">$${budget}</td>
+            ${monthly.map(val => `<td class="text-end">${val}</td>`).join('')}
+            <td class="text-end">$${actualTotal}</td>
+            <td class="text-end ${varianceClass}">${variance}</td>
+          </tr>
+        `;
+      }
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Set correct login URL for Connect to Xero button
+  const loginBtn = document.getElementById('xero-login-btn');
+  if (loginBtn) {
+    loginBtn.href = `${API_BASE}/xero/login/`;
+  }
+  renderXeroBudgetTable();
+});
+</script>
+{% endblock javascripts %}

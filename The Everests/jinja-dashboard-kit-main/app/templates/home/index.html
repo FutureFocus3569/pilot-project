@@ -1,0 +1,751 @@
+
+{% extends "layouts/base.html" %}
+<!-- TEST-TOP-123 -->
+
+{% block title %} Dashboard {% endblock %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+    <div class="pc-container">
+      <div class="pcoded-content">
+        <div class="page-header" style="margin-bottom:0.5rem; padding-bottom:0;">
+          <div class="page-block" style="padding-bottom:0; margin-bottom:0;">
+            <div class="row align-items-center" style="margin-bottom:0;">
+              <div class="col-md-6">
+                <div class="page-header-title" style="margin-bottom:0;">
+                  <h5 class="m-b-10" style="margin-bottom:0;">Dashboard</h5>
+                </div>
+                <ul class="breadcrumb" style="margin-bottom:0.2rem;">
+                  <li class="breadcrumb-item"><a href="/">Home</a></li>
+                  <li class="breadcrumb-item">Dashboard</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- All your main dashboard HTML, cards, and enrolment status sections go here. -->
+        <!-- Monthly Occupancy Section -->
+        <div class="card p-4 mb-4 mt-5" style="margin-top:3.5rem !important;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Monthly Occupancy</h4>
+            <span class="text-muted" style="font-size:1em;">Live occupancy data - updated daily</span>
+          </div>
+          <!-- Month Selector -->
+          <div class="d-flex justify-content-center align-items-center mb-3" id="occupancy-month-selector">
+            <button id="occupancy-prev-month" class="btn btn-link px-2" style="font-size:1.5em;" aria-label="Previous Month">
+              <span aria-hidden="true">&#8592;</span>
+            </button>
+            <span id="occupancy-current-month" style="font-size:1.2em;font-weight:600;min-width:110px;display:inline-block;text-align:center;">Jul 2025</span>
+            <button id="occupancy-next-month" class="btn btn-link px-2" style="font-size:1.5em;" aria-label="Next Month">
+              <span aria-hidden="true">&#8594;</span>
+            </button>
+          </div>
+          <div class="row g-4">
+            <div id="monthly-occupancy-row" class="row g-4"></div>
+          </div>
+        </div>
+    <!-- Enrolment Status Section -->
+    <div class="pc-container" style="width:100%;max-width:100vw;">
+      <div class="pcoded-content" style="width:100%;">
+        <div class="card p-4 mt-4 w-100" style="box-sizing:border-box;">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="mb-1">Enrolment Status</h4>
+              <div class="text-muted" style="font-size:1em;">Live enrolment data - automatically updated weekdays at 5am NZT</div>
+            </div>
+            <div class="d-flex flex-column align-items-end" style="min-width:220px;">
+              <button class="btn btn-outline-secondary btn-sm mb-1" disabled>
+                <i class="material-icons-two-tone">autorenew</i> Auto-Updated Daily
+              </button>
+              <div class="text-muted" style="font-size:0.9em;">Data sourced from Discover<br>Auto-updated at 5am NZT, Mon-Fri</div>
+            </div>
+          </div>
+          <div class="row g-4 justify-content-center">
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+              <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                  <h5 class="m-0 p-2" style="color:#111;">Papamoa Beach</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                  <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#43a047;font-weight:600;">83</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">4</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">11</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+              <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                  <h5 class="m-0 p-2" style="color:#111;">The Boulevard</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                  <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#43a047;font-weight:600;">64</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">4</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">2</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+              <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                  <h5 class="m-0 p-2" style="color:#111;">The Bach</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                  <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#43a047;font-weight:600;">49</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">7</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+              <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                  <h5 class="m-0 p-2" style="color:#111;">Terrace Views</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                  <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#43a047;font-weight:600;">109</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">5</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+              <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                  <h5 class="m-0 p-2" style="color:#111;">Livingstone Drive</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                  <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#43a047;font-weight:600;">60</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">4</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+              <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                  <h5 class="m-0 p-2" style="color:#111;">West Dune</h5>
+                </div>
+                <div class="card-body text-center p-3 pt-2 pb-2">
+                  <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#43a047;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">6</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                    </div>
+                    <div class="col p-0">
+                      <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                      <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+{% endblock %}
+    <!-- Enrolment Status Section -->
+    <!-- TEST-ENROLMENT-SECTION -->
+    <div class="pc-container">
+      <div class="pcoded-content">
+        <div class="card p-4 mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                    <h4 class="mb-1">Enrolment Status</h4>
+                    <div class="text-muted" style="font-size:1em;">Live enrolment data - automatically updated weekdays at 5am NZT</div>
+                </div>
+                <div>
+                    <button class="btn btn-outline-secondary btn-sm" disabled>
+                        <i class="material-icons-two-tone">autorenew</i> Auto-Updated Daily
+                    </button>
+                    <div class="text-muted" style="font-size:0.9em;">Data sourced from Discover<br>Auto-updated at 5am NZT, Mon-Fri</div>
+                </div>
+            </div>
+            <div class="row g-4">
+                <!-- Example Enrolment Status cards for each center -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                        <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                            <h5 class="m-0 p-2" style="color:#111;">Papamoa Beach</h5>
+                        </div>
+                        <div class="card-body text-center p-3 pt-2 pb-2">
+                            <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#43a047;font-weight:600;">83</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">4</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">11</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                        <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                            <h5 class="m-0 p-2" style="color:#111;">The Boulevard</h5>
+                        </div>
+                        <div class="card-body text-center p-3 pt-2 pb-2">
+                            <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#43a047;font-weight:600;">64</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">4</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">2</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                        <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                            <h5 class="m-0 p-2" style="color:#111;">The Bach</h5>
+                        </div>
+                        <div class="card-body text-center p-3 pt-2 pb-2">
+                            <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#43a047;font-weight:600;">49</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">0</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">7</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                        <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                            <h5 class="m-0 p-2" style="color:#111;">Terrace Views</h5>
+                        </div>
+                        <div class="card-body text-center p-3 pt-2 pb-2">
+                            <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#43a047;font-weight:600;">109</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">0</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">5</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                        <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                            <h5 class="m-0 p-2" style="color:#111;">Livingstone Drive</h5>
+                        </div>
+                        <div class="card-body text-center p-3 pt-2 pb-2">
+                            <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#43a047;font-weight:600;">60</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">0</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">4</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+                        <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+                            <h5 class="m-0 p-2" style="color:#111;">West Dune</h5>
+                        </div>
+                        <div class="card-body text-center p-3 pt-2 pb-2">
+                            <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#43a047;font-weight:600;">0</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">CURRENT</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">0</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">FUTURE</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">6</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">WAITING</span>
+                                </div>
+                                <div class="col p-0">
+                                    <span style="font-size:1.3em;color:#ff9800;font-weight:600;">0</span><br>
+                                    <span class="text-muted" style="font-size:0.95em;">ENQUIRY</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+
+    <style>
+    .occupancy-card {
+        box-shadow: 0 2px 8px rgba(30,200,233,0.08), 0 1.5px 6px rgba(0,0,0,0.04);
+        border-radius: 1.1rem;
+        transition: box-shadow 0.2s;
+        min-height: 220px;
+        height: 220px;
+        max-height: 220px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+    .occupancy-card:focus, .occupancy-card:hover {
+        box-shadow: 0 4px 16px rgba(30,200,233,0.18), 0 3px 12px rgba(0,0,0,0.10);
+        outline: 2px solid #1de9b6;
+    }
+    .donut-label {
+        font-size: 1em;
+        font-weight: 600;
+        margin-top: 0.3em;
+        letter-spacing: 1px;
+    }
+    </style>
+
+    <script>
+    // Month navigation logic for occupancy section and live data fetch
+    const OCCUPANCY_MONTHS = [
+      'Jan 2024', 'Feb 2024', 'Mar 2024', 'Apr 2024', 'May 2024', 'Jun 2024', 'Jul 2024',
+      'Aug 2024', 'Sep 2024', 'Oct 2024', 'Nov 2024', 'Dec 2024',
+      'Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025', 'Jul 2025'
+    ];
+    const OCCUPANCY_CENTRES = [
+      'Papamoa Beach', 'The Boulevard', 'The Bach', 'Terrace Views', 'Livingstone Drive', 'West Dune'
+    ];
+    let occupancyMonthIdx = OCCUPANCY_MONTHS.length - 1;
+
+    function getMonthYearString(idx) {
+      // Convert 'Jul 2025' to '07-2025' for API
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      let [mon, year] = OCCUPANCY_MONTHS[idx].split(' ');
+      let mm = (months.indexOf(mon) + 1).toString().padStart(2, '0');
+      return mm + '-' + year;
+    }
+
+    async function fetchOccupancyData(idx) {
+      const month_year = getMonthYearString(idx);
+      try {
+        let resp = await fetch(`/api/occupancy/?month_year=${month_year}`);
+        if (resp.ok) {
+          return await resp.json();
+        }
+      } catch (err) {
+        console.error('Occupancy API fetch error:', err);
+      }
+      return [];
+    }
+
+    function renderOccupancyCards(data) {
+      const row = document.getElementById('monthly-occupancy-row');
+      row.innerHTML = '';
+      OCCUPANCY_CENTRES.forEach((centre) => {
+        const centreData = data.find(d => d.centre_name === centre);
+        let u2 = centreData && typeof centreData.u2 === 'number' ? centreData.u2 : (centreData && centreData.u2 ? centreData.u2 : 0);
+        let o2 = centreData && typeof centreData.o2 === 'number' ? centreData.o2 : (centreData && centreData.o2 ? centreData.o2 : 0);
+        let total = centreData && typeof centreData.total === 'number' ? centreData.total : (centreData && centreData.total ? centreData.total : 0);
+        let card = document.createElement('div');
+        card.className = 'col-md-6 col-lg-4 mb-4';
+        card.innerHTML = `
+          <div class="card h-100 occupancy-card" style="border-radius:1.1rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);">
+            <div class="card-header p-0" style="background:linear-gradient(90deg,#1de9b6 0%,#1dc4e9 100%);">
+              <h5 class="m-0 p-2" style="color:#111;">${centre}</h5>
+            </div>
+            <div class="card-body text-center p-3 pt-2 pb-2">
+              <div class="row mb-1 d-flex justify-content-center align-items-end text-center">
+                <div class="col p-0">
+                  <span style="font-size:1.3em;color:#43a047;font-weight:600;">${u2}%</span><br>
+                  <span class="text-muted" style="font-size:0.95em;">U2</span>
+                </div>
+                <div class="col p-0">
+                  <span style="font-size:1.3em;color:#00bcd4;font-weight:600;">${o2}%</span><br>
+                  <span class="text-muted" style="font-size:0.95em;">O2</span>
+                </div>
+                <div class="col p-0">
+                  <span style="font-size:1.3em;color:#fbc02d;font-weight:600;">${total}%</span><br>
+                  <span class="text-muted" style="font-size:0.95em;">TOTAL</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        row.appendChild(card);
+      });
+    }
+
+    async function updateOccupancyMonthSelector() {
+      document.getElementById('occupancy-current-month').textContent = OCCUPANCY_MONTHS[occupancyMonthIdx];
+      document.getElementById('occupancy-prev-month').disabled = occupancyMonthIdx === 0;
+      document.getElementById('occupancy-next-month').disabled = occupancyMonthIdx === OCCUPANCY_MONTHS.length - 1;
+      const data = await fetchOccupancyData(occupancyMonthIdx);
+      renderOccupancyCards(data);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('occupancy-prev-month').addEventListener('click', function() {
+        if (occupancyMonthIdx > 0) {
+          occupancyMonthIdx--;
+          updateOccupancyMonthSelector();
+        }
+      });
+      document.getElementById('occupancy-next-month').addEventListener('click', function() {
+        if (occupancyMonthIdx < OCCUPANCY_MONTHS.length - 1) {
+          occupancyMonthIdx++;
+          updateOccupancyMonthSelector();
+        }
+      });
+      updateOccupancyMonthSelector();
+    });
+    </script>
+    <script>
+    // Fetch and render overdue invoices on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchOverdueInvoices();
+    });
+
+    const OVERDUE_CENTRES = [
+        "Papamoa Beach",
+        "The Boulevard",
+        "The Bach",
+        "Terrace Views",
+        "Livingstone Drive",
+        "West Dune"
+    ];
+
+    // --- Budget fallback logic for Xero/Overdue section ---
+    // Hardcoded fallback budgets (all $0, can be updated as needed)
+    const FALLBACK_BUDGETS = {
+        "Papamoa Beach": 0,
+        "The Boulevard": 0,
+        "The Bach": 0,
+        "Terrace Views": 0,
+        "Livingstone Drive": 0,
+        "West Dune": 0
+    };
+
+    // Example: If you want to show a budget column in the overdue cards, you can add it here
+    // If you want to show budget in a different section, adapt as needed
+
+    async function fetchOverdueInvoices() {
+        let data = [];
+        let budgets = {};
+        // Use local backend API base URL
+        const API_BASE = `http://103.231.90.204:8001`;
+        try {
+            let resp = await fetch(`${API_BASE}/api/overdue-invoices/`);
+            if (resp.ok) {
+                data = await resp.json();
+            } else {
+                console.error('Overdue API request failed:', resp.status, resp.statusText);
+            }
+        } catch (err) {
+            console.error('Overdue API fetch error:', err);
+        }
+        // Try to fetch budgets from Django API (all categories for selected centre and year)
+        try {
+            let centre = "Papamoa Beach"; // You may want to make this dynamic if needed
+            let year = 2025;
+            let budgetResp = await fetch(`${API_BASE}/api/budgets/?centre=${encodeURIComponent(centre)}&year=${year}`);
+            if (budgetResp.ok) {
+                let budgetData = await budgetResp.json();
+                // Map: { category: monthly_budget }, include 0 values
+                budgetData.forEach(b => {
+                    if (b.category != null && b.monthly_budget != null) {
+                        budgets[b.category] = b.monthly_budget;
+                    }
+                });
+            } else {
+                console.warn('Budget API request failed:', budgetResp.status, budgetResp.statusText);
+            }
+        } catch (err) {
+            console.warn('Budget API fetch error:', err);
+        }
+        // Render overdue invoice cards for all centres (not filtered by budgets)
+        renderOverdueCards(data, OVERDUE_CENTRES);
+
+        // Render Xero Budget vs Actuals table for Papamoa Beach
+        renderXeroBudgetTable(budgets);
+    }
+
+    // Render the Xero Budget vs Actuals table for a centre
+    function renderXeroBudgetTable(budgets) {
+        // Only show categories that have a budget entry from the API (including 0)
+        let tableBody = document.getElementById('xero-budget-table-body');
+        if (!tableBody) return;
+        tableBody.innerHTML = '';
+        Object.keys(budgets).forEach(category => {
+            // Only show if the category is present in the API response (even if 0)
+            if (budgets[category] !== undefined && budgets[category] !== null) {
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${category}</td>
+                    <td>$${budgets[category]}</td>
+                    <td><!-- Actuals for Jan go here --></td>
+                `;
+                tableBody.appendChild(row);
+            }
+        });
+    }
+
+    // If you want to show a budget value in the overdue cards, add a budget column here
+    // This example just shows overdue amount, but you can add budget as needed
+    function renderOverdueCards(data, centres) {
+        const row = document.getElementById('overdue-invoices-row');
+        row.innerHTML = '';
+        centres.forEach((centre) => {
+            const centreData = data.find(d => d.centre_name === centre);
+            let amount = centreData && centreData.overdue_invoice_amount ? centreData.overdue_invoice_amount : '0.00';
+            let card = document.createElement('div');
+            card.className = 'col-md-2 col-6 p-3 d-flex justify-content-center';
+            card.innerHTML = `
+              <div class="card w-100 text-center" style="border-radius:0.7rem;box-shadow:0 2px 8px rgba(30,200,233,0.08),0 1.5px 6px rgba(0,0,0,0.04);border:none;">
+                <div class="card-header bg-white p-2" style="border-radius:0.7rem 0.7rem 0 0;font-weight:600;font-size:1.15em;color:#222;">${centre}</div>
+                <div class="card-body p-3">
+                  <div style="font-size:1.4em;font-weight:600;color:#f26a6a;">$${amount.replace(/^\/$/, '')}</div>
+                  <div class="text-muted mt-1" style="font-size:1.1em;letter-spacing:1px;">OVERDUE</div>
+                </div>
+              </div>
+            `;
+            row.appendChild(card);
+        });
+    }
+    // Utility: get unique months from data
+    function getUniqueMonths(data) {
+        const months = Array.from(new Set(data.map(row => row.month)));
+        months.sort();
+        return months;
+    }
+
+    // Utility: get unique centres from data
+    function getUniqueCentres(data) {
+        const centres = Array.from(new Set(data.map(row => row.centreName)));
+        return centres;
+    }
+
+    // Calculate averages
+    function getAverages(data) {
+        let u2s = data.map(d => d.u2).filter(v => typeof v === 'number');
+        let o2s = data.map(d => d.o2).filter(v => typeof v === 'number');
+        let totals = data.map(d => d.total).filter(v => typeof v === 'number');
+        let avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : '--';
+        return {
+            u2: avg(u2s),
+            o2: avg(o2s),
+            total: avg(totals)
+        };
+    }
+
+    // Render donut chart
+    function renderDonutChart(containerId, value, color) {
+        // Only render chart if value is a valid number
+        let valid = typeof value === 'number' && !isNaN(value);
+        var el = document.querySelector('#'+containerId);
+        if (valid) {
+            var options = {
+                chart: { type: 'donut', width: 110, height: 110, sparkline: { enabled: true } },
+                series: [value, 100-value],
+                labels: ['',''],
+                colors: [color, '#e9ecef'],
+                dataLabels: { enabled: false },
+                legend: { show: false },
+                stroke: { width: 0 },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '80%',
+                            labels: {
+                                show: true,
+                                name: { show: false },
+                                value: { show: false },
+                                total: { show: false }
+                            }
+                        }
+                    }
+                },
+                tooltip: { enabled: false }
+            };
+            var chart = new ApexCharts(el, options);
+            chart.render();
+            // Add value in center
+            setTimeout(function() {
+                if (el && !el.querySelector('.donut-value')) {
+                    let span = document.createElement('span');
+                    span.className = 'donut-value';
+                    span.innerText = value + '%';
+                    el.appendChild(span);
+                }
+            }, 300);
+        } else {
+            // Show 'No data' if value is missing or invalid
+            el.innerHTML = '';
+            let span = document.createElement('span');
+            span.className = 'donut-value';
+            span.innerText = 'No data';
+            el.appendChild(span);
+        }
+    }
+
+    // Render all cards for a month
+    function renderOccupancyCards(data, centres) {
+        const row = document.getElementById('monthly-occupancy-row');
+        row.innerHTML = '';
+        const colors = { u2: '#0d8abc', o2: '#43a047', total: '#fbc02d' };
+        centres.forEach((centre, idx) => {
+            const centreData = data.find(d => d.centre_name === centre);
+            let u2 = centreData && typeof centreData.u2 === 'number' ? centreData.u2 : 0;
+            let o2 = centreData && typeof centreData.o2 === 'number' ? centreData.o2 : 0;
+            let total = centreData && typeof centreData.total === 'number' ? centreData.total : 0;
+            let card = document.createElement('div');
+            card.className = 'col-md-6 col-lg-4 mb-4';
+            card.innerHTML = `
+                <div class="card h-100 occupancy-card">
+                    <div class="card-header p-0" style="background: linear-gradient(90deg, #1de9b6 0%, #1dc4e9 100%);">
+                        <h5 class="m-0 p-3" style="color: #111;">${centre}</h5>
+                    </div>
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <div class="d-flex justify-content-center align-items-center w-100 mb-2 mt-4" style="gap: 16px; max-width: 420px; margin: 0 auto;">
+                            <div class="text-center">
+                                <div class="donut-container"><div id="donut-u2-${idx}" class="donut-chart"></div></div>
+{% block javascripts %}
+{% endblock %}
+        let avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : '--';

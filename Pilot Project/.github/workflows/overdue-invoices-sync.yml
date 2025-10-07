@@ -1,0 +1,35 @@
+name: Overdue Invoices Sync
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.ts'
+      - '**.tsx'
+      - 'scripts/**'
+      - '.github/workflows/overdue-invoices-sync.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 13 * * 1-5' # 13:00 UTC, Mon-Fri (adjust as needed)
+jobs:
+  sync-overdue-invoices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: List scripts directory
+        run: ls -l scripts
+      - name: Run Playwright script
+        run: node ./scripts/playwright-scrape-overdue-invoices.js
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DISCOVER_USERNAME: ${{ secrets.DISCOVER_USERNAME }}
+          DISCOVER_PASSWORD: ${{ secrets.DISCOVER_PASSWORD }}
