@@ -20,9 +20,150 @@ const CENTRES = [
 const USERNAME = process.env.DISCOVER_USERNAME || 'courtney@futurefocus.co.nz';
 const PASSWORD = process.env.DISCOVER_PASSWORD || 'Mercedes2!!!';
 
-// ...scrapeCurrentChildrenCount, scrapeFutureChildrenCount, scrapeWaitingChildrenCount, scrapeEnquiryChildrenCount functions copied from original script...
 
-// (Functions omitted for brevity, will be copied in next step)
+// Scrape the total number of 'Current' children
+async function scrapeCurrentChildrenCount(page, discoverApiId) {
+  const url = `https://discoverchildcare.co.nz/${discoverApiId}/Child`;
+  await page.goto(url);
+  await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
+  await page.waitForSelector('input[type="checkbox"][name="Current"]');
+  const filters = ['Future', 'Waiting', 'Enquiry', 'Past'];
+  for (const filter of filters) {
+    const selector = `input[type="checkbox"][name="${filter}"]`;
+    if (await page.isChecked(selector)) {
+      await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
+      await page.click(`label[for="${filter}"]`);
+    }
+  }
+  const currentSelector = 'input[type="checkbox"][name="Current"]';
+  if (!(await page.isChecked(currentSelector))) {
+    await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
+    await page.click('label[for="Current"]');
+  }
+  await page.waitForSelector('.dataTables_info', { timeout: 5000 });
+  let total = null;
+  for (let i = 0; i < 5; i++) {
+    total = await page.evaluate(() => {
+      const info = document.querySelector('.dataTables_info');
+      if (!info) return null;
+      const match = info.textContent && info.textContent.match(/of (\d+) entries/);
+      return match ? parseInt(match[1], 10) : null;
+    });
+    if (total !== null) break;
+    await page.waitForTimeout(500);
+  }
+  return total;
+}
+
+// Scrape the total number of 'Future' children
+async function scrapeFutureChildrenCount(page, discoverApiId) {
+  const url = `https://discoverchildcare.co.nz/${discoverApiId}/Child`;
+  await page.goto(url);
+  await page.waitForSelector('input[type="checkbox"][name="Future"]', { timeout: 10000 });
+  const filters = ['Current', 'Waiting', 'Enquiry', 'Past'];
+  for (const filter of filters) {
+    const selector = `input[type="checkbox"][name="${filter}"]`;
+    if (await page.isChecked(selector)) {
+      await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
+      await page.click(`label[for="${filter}"]`);
+      await page.waitForTimeout(300);
+    }
+  }
+  const futureSelector = 'input[type="checkbox"][name="Future"]';
+  if (!(await page.isChecked(futureSelector))) {
+    await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
+    await page.click('label[for="Future"]');
+    await page.waitForTimeout(500);
+  }
+  await page.waitForSelector('.dataTables_info', { state: 'detached', timeout: 10000 }).catch(() => {});
+  let appeared = false;
+  try {
+    await page.waitForSelector('.dataTables_info', { timeout: 10000 });
+    appeared = true;
+  } catch (err) {
+    await page.reload();
+    await page.waitForSelector('input[type="checkbox"][name="Future"]', { timeout: 10000 });
+    for (const filter of filters) {
+      const selector = `input[type="checkbox"][name="${filter}"]`;
+      if (await page.isChecked(selector)) {
+        await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
+        await page.click(`label[for="${filter}"]`);
+        await page.waitForTimeout(300);
+      }
+    }
+    if (!(await page.isChecked(futureSelector))) {
+      await page.waitForSelector('#processing-modal', { state: 'detached', timeout: 10000 }).catch(() => {});
+      await page.click('label[for="Future"]');
+      await page.waitForTimeout(500);
+    }
+    try {
+      await page.waitForSelector('.dataTables_info', { timeout: 10000 });
+      appeared = true;
+    } catch (err2) {
+      return 0;
+    }
+  }
+  let total = null;
+  if (appeared) {
+    for (let i = 0; i < 5; i++) {
+      total = await page.evaluate(() => {
+        const info = document.querySelector('.dataTables_info');
+        if (!info) return null;
+        const match = info.textContent && info.textContent.match(/of (\d+) entries/);
+        return match ? parseInt(match[1], 10) : null;
+      });
+      if (total !== null) break;
+      await page.waitForTimeout(500);
+    }
+  }
+  return total;
+}
+
+// Scrape the total number of 'Waiting' children
+async function scrapeWaitingChildrenCount(page) {
+  const waitingChecked = await page.isChecked('input[type="checkbox"][name="Waiting"]');
+  if (!waitingChecked) {
+    await page.click('label[for="Waiting"]');
+    await page.waitForTimeout(500);
+  }
+  await page.waitForSelector('.dataTables_info', { state: 'detached', timeout: 5000 }).catch(() => {});
+  await page.waitForSelector('.dataTables_info', { timeout: 5000 });
+  let total = null;
+  for (let i = 0; i < 5; i++) {
+    total = await page.evaluate(() => {
+      const info = document.querySelector('.dataTables_info');
+      if (!info) return null;
+      const match = info.textContent && info.textContent.match(/of (\d+) entries/);
+      return match ? parseInt(match[1], 10) : null;
+    });
+    if (total !== null) break;
+    await page.waitForTimeout(500);
+  }
+  return total;
+}
+
+// Scrape the total number of 'Enquiry' children
+async function scrapeEnquiryChildrenCount(page) {
+  const enquiryChecked = await page.isChecked('input[type="checkbox"][name="Enquiry"]');
+  if (!enquiryChecked) {
+    await page.click('label[for="Enquiry"]');
+    await page.waitForTimeout(500);
+  }
+  await page.waitForSelector('.dataTables_info', { state: 'detached', timeout: 5000 }).catch(() => {});
+  await page.waitForSelector('.dataTables_info', { timeout: 5000 });
+  let total = null;
+  for (let i = 0; i < 5; i++) {
+    total = await page.evaluate(() => {
+      const info = document.querySelector('.dataTables_info');
+      if (!info) return null;
+      const match = info.textContent && info.textContent.match(/of (\d+) entries/);
+      return match ? parseInt(match[1], 10) : null;
+    });
+    if (total !== null) break;
+    await page.waitForTimeout(500);
+  }
+  return total;
+}
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
