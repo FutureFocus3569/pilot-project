@@ -186,31 +186,28 @@ async function scrapeEnquiryChildrenCount(page) {
       console.log(`${centre.name} - Waiting Children: ${waitingCount}`);
       console.log(`${centre.name} - Enquiry Children: ${enquiryCount}`);
 
-      // Save to OccupancyData for today
+      // Save to enrolment_status for today
       const today = new Date();
-      await prisma.occupancyData.upsert({
+      await prisma.enrolment_status.upsert({
         where: {
-          centreId_date: {
-            centreId: centre.id,
+          centre_id_date: {
+            centre_id: centre.name,
             date: today,
           },
         },
         update: {
-          currentChildren: currentCount,
-          futureChildren: futureCount,
-          waitingChildren: waitingCount,
-          enquiryChildren: enquiryCount,
+          current: currentCount,
+          future: futureCount,
+          waiting: waitingCount,
+          enquiry: enquiryCount,
         },
         create: {
-          centreId: centre.id,
+          centre_id: centre.name,
           date: today,
-          currentChildren: currentCount,
-          futureChildren: futureCount,
-          waitingChildren: waitingCount,
-          enquiryChildren: enquiryCount,
-          u2Count: 0,
-          o2Count: 0,
-          totalCount: 0,
+          current: currentCount,
+          future: futureCount,
+          waiting: waitingCount,
+          enquiry: enquiryCount,
         },
       });
     } catch (e) {
