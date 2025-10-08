@@ -1,3 +1,35 @@
+model enrolment_status {
+  id         String   @id @default(uuid())
+  centre_id  String
+  date       DateTime
+  current    Int
+  future     Int
+  waiting    Int
+  enquiry    Int
+  created_at DateTime @default(now())
+
+  @@unique([centre_id, date])
+  @@map("enrolment_status")
+}
+model QuickAccessCard {
+  id        String   @id @default(cuid())
+  userId    String   @db.Uuid
+  name      String
+  url       String
+  username  String
+  password  String
+  category  String
+  centre    String?
+  favicon   String?
+  lastUsed  DateTime?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("quick_access_cards")
+  @@index([userId])
+}
 model CentreOccupancy {
   id        String   @id @default(cuid())
   centreId  String
@@ -32,6 +64,7 @@ model User {
   centrePermissions UserCentrePermission[]
   pagePermissions   UserPagePermission[]
   organizations     Organization?          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  quickAccessCards  QuickAccessCard[]
 
   @@map("users")
 }
