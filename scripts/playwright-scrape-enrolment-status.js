@@ -1,4 +1,4 @@
-// playwright-scrape-enrolment-status.js
+Success. No rows returned// playwright-scrape-enrolment-status.js
 // Script to log in to Discover Childcare, scrape enrolment status for each centre, and update the DB
 // Usage: node playwright-scrape-enrolment-status.js
 
@@ -188,28 +188,33 @@ async function scrapeEnquiryChildrenCount(page) {
 
       // Save to enrolment_status for today
       const today = new Date();
-      await prisma.enrolment_status.upsert({
-        where: {
-          centre_id_date: {
+      try {
+        const result = await prisma.enrolment_status.upsert({
+          where: {
+            centre_id_date: {
+              centre_id: centre.name,
+              date: today,
+            },
+          },
+          update: {
+            current: currentCount,
+            future: futureCount,
+            waiting: waitingCount,
+            enquiry: enquiryCount,
+          },
+          create: {
             centre_id: centre.name,
             date: today,
+            current: currentCount,
+            future: futureCount,
+            waiting: waitingCount,
+            enquiry: enquiryCount,
           },
-        },
-        update: {
-          current: currentCount,
-          future: futureCount,
-          waiting: waitingCount,
-          enquiry: enquiryCount,
-        },
-        create: {
-          centre_id: centre.name,
-          date: today,
-          current: currentCount,
-          future: futureCount,
-          waiting: waitingCount,
-          enquiry: enquiryCount,
-        },
-      });
+        });
+        console.log(`Upserted enrolment status for ${centre.name}:`, result);
+      } catch (err) {
+        console.error(`Error upserting enrolment status for ${centre.name}:`, err);
+      }
     } catch (e) {
       console.error(`Error scraping ${centre.name}:`, e);
     }
