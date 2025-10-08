@@ -1,4 +1,4 @@
-Success. No rows returned// playwright-scrape-enrolment-status.js
+// playwright-scrape-enrolment-status.js
 // Script to log in to Discover Childcare, scrape enrolment status for each centre, and update the DB
 // Usage: node playwright-scrape-enrolment-status.js
 
